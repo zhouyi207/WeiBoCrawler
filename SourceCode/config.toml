@@ -1,0 +1,5 @@
+[database]
+list = "./SourceCode/database/list.json"
+body = "./SourceCode/database/body.json"
+comment1 = "./SourceCode/database/comment1.json"
+comment2 = "./SourceCode/database/comment2.json"

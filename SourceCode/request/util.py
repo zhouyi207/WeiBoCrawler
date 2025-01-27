@@ -3,6 +3,7 @@ from datetime import datetime
 from pydantic import BaseModel
 from typing import Optional
 
+
 class RequestParams(BaseModel):
     """这个类主要用来保存一些请求参数的东西
 
@@ -23,3 +24,6 @@ class RequestParams(BaseModel):
     update_time: datetime = Optional[datetime]
 
 requestparams = RequestParams.model_validate(toml.load("./SourceCode/request/request.toml"))
+
+
+
