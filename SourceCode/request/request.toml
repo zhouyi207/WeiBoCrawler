@@ -1,0 +1,62 @@
+# 需要配置 referer
+[body_headers]
+accept = "text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,image/apng,*/*;q=0.8,application/signed-exchange;v=b3;q=0.7"
+accept-language = "zh-CN,zh;q=0.9,en;q=0.8,en-GB;q=0.7,en-US;q=0.6"
+priority = "u=0, i"
+sec-ch-ua = "\"Not A(Brand\";v=\"8\", \"Chromium\";v=\"132\", \"Microsoft Edge\";v=\"132\""
+sec-ch-ua-mobile = "?0"
+sec-ch-ua-platform = "\"Windows\""
+sec-fetch-dest = "document"
+sec-fetch-mode = "navigate"
+sec-fetch-site = "none"
+sec-fetch-user = "?1"
+upgrade-insecure-requests = "1"
+user-agent = "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/132.0.0.0 Safari/537.36 Edg/132.0.0.0"
+
+
+# 需要配置 referer
+[comment1_buildComments_headers]
+accept = "application/json, text/plain, */*"
+accept-language = "zh-CN,zh;q=0.9,en;q=0.8,en-GB;q=0.7,en-US;q=0.6"
+client-version = "v2.47.25"
+priority = "u=1, i"
+referer = "https://weibo.com/7327934610/PbmkQlvQx"
+sec-ch-ua = "\"Not A(Brand\";v=\"8\", \"Chromium\";v=\"132\", \"Microsoft Edge\";v=\"132\""
+sec-ch-ua-mobile = "?0"
+sec-ch-ua-platform = "\"Windows\""
+sec-fetch-dest = "empty"
+sec-fetch-mode = "cors"
+sec-fetch-site = "same-origin"
+server-version = "v2025.01.23.1"
+user-agent = "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/132.0.0.0 Safari/537.36 Edg/132.0.0.0"
+x-requested-with = "XMLHttpRequest"
+
+
+# 需要配置 referer
+[comment1_rum_headers]
+accept = "*/*"
+accept-language = "zh-CN,zh;q=0.9,en;q=0.8,en-GB;q=0.7,en-US;q=0.6"
+content-type = "multipart/form-data; boundary=----WebKitFormBoundaryUkdSAdLEMv2OAYMN"
+origin = "https://weibo.com"
+priority = "u=1, i"
+referer = "https://weibo.com/7327934610/PbmkQlvQx"
+sec-ch-ua = "\"Not A(Brand\";v=\"8\", \"Chromium\";v=\"132\", \"Microsoft Edge\";v=\"132\""
+sec-ch-ua-mobile = "?0"
+sec-ch-ua-platform = "\"Windows\""
+sec-fetch-dest = "empty"
+sec-fetch-mode = "cors"
+sec-fetch-site = "same-origin"
+user-agent = "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/132.0.0.0 Safari/537.36 Edg/132.0.0.0"
+"x-xsrf-token;" = ""
+
+
+[cookies]
+UOR = "www.bing.com,www.weibo.com,www.bing.com"
+SINAGLOBAL = "5567234351973.487.1734010784597"
+SCF = "AraiBepVee8-XuGsVop-CpYpyTazZNvVcU6Jx085Y4vfXa5ITySvLy6ozmTrTq5Ff6ZdCOD4u9Z02egDPOJtX0k."
+SUB = "_2A25Kke8ODeRhGeFJ4lIT9CzNyj6IHXVp727GrDV8PUNbmtAYLXLakW9NfsmQ4WsdQx0AM6C_D3QAMQMPoUlZfhMe"
+SUBP = "0033WrSXqPxfM725Ws9jqgMF55529P9D9W5Oj.LmOvr7_7fS8d6lYxiZ5JpX5KzhUgL.FoMN1K5EShzpeKz2dJLoIp7LxKML1KBLBKnLxKqL1hnLBoMNS0.7eoBEeK2E"
+ALF = "02_1740450910"
+_s_tentry = "www.weibo.com"
+Apache = "715860168168.0854.1737866588151"
+ULV = "1737866588175:2:1:1:715860168168.0854.1737866588151:1734010784598"

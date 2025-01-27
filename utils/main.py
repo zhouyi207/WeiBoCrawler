@@ -7,7 +7,7 @@ import logging
 
 logging.basicConfig(level=logging.INFO)
 
-
+ 
 class WBParser:
     def __init__(self, cookie):
         self.cookie = cookie
