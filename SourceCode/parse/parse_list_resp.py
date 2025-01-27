@@ -194,7 +194,7 @@ def get_star_num(select: parsel.Selector) -> Optional[int]:
     
 
 # @custom_validate_call
-def parse_list_html(html: str) -> List[dict]:
+def parse_list_resp(html: str) -> List[dict]:
     """解析微博列表主体的html
 
     Args:
@@ -211,15 +211,15 @@ def parse_list_html(html: str) -> List[dict]:
         item = {
             "mid": get_mid(select),
             "uid": get_uid(select),
-            "个人昵称": get_personal_name(select),
-            "个人主页": get_personal_href(select),
-            "微博主页": get_weibo_href(select),
-            "发布时间": get_publish_time(select),
-            "内容来自": get_content_from(select),
-            "全部内容": get_content_all(select),
-            "转发数量": get_retweet_num(select),
-            "评论数量": get_comment_num(select),
-            "点赞数量": get_star_num(select),
+            "personal_name": get_personal_name(select),
+            "personal_href": get_personal_href(select),
+            "weibo_href": get_weibo_href(select),
+            "publish_time": get_publish_time(select),
+            "content_from": get_content_from(select),
+            "content_all": get_content_all(select),
+            "retweet_num": get_retweet_num(select),
+            "comment_num": get_comment_num(select),
+            "star_num": get_star_num(select),
         }
         lst.append(item)
 

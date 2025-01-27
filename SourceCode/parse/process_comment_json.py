@@ -1,11 +1,18 @@
 import pandas as pd
-from ..type import custom_validate_call
+from httpx import Response
 
-@custom_validate_call
-def process_comments_data(data: pd.DataFrame) -> pd.DataFrame:
-    """
-        处理微博评论数据
-    """
+
+def process_comment_resp(resp: Response) -> dict:
+    lst = []
+    
+    for comment in resp.json()["data"]:
+        comment["text_raw"] = comment["text"]
+        comment["text"] = comment["text_raw"].replace("\n", "")
+        comment["text"] = comment["text"].replace(" ", "")
+        comment["text"] = comment["text"].replace("\t", "")
+        comment["text"] = comment["text"].replace("\r", "")
+
+
     data_user = pd.json_normalize(data["user"])
     data_user_col_map = {
         "id": "uid",

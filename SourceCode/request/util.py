@@ -13,6 +13,7 @@ class RequestParams(BaseModel):
         cookies (dict): 微博的cookies
         update_time (datetime): 更新时间    
     """
+    list_headers: dict
     body_headers: dict
     comment1_buildComments_headers: dict
     comment1_rum_headers: dict
