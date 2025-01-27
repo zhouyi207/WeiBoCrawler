@@ -194,7 +194,7 @@ def get_star_num(select: parsel.Selector) -> Optional[int]:
     
 
 # @custom_validate_call
-def parse_list_resp(html: str) -> List[dict]:
+def parse_list_html(html: str) -> List[dict]:
     """解析微博列表主体的html
 
     Args:
