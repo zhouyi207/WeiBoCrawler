@@ -1,6 +1,11 @@
 import pandas as pd
+from ..type import custom_validate_call
 
-def process_data(data):
+@custom_validate_call
+def process_comments_data(data: pd.DataFrame) -> pd.DataFrame:
+    """
+        处理微博评论数据
+    """
     data_user = pd.json_normalize(data["user"])
     data_user_col_map = {
         "id": "uid",

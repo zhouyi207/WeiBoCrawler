@@ -14,13 +14,13 @@ upgrade-insecure-requests = "1"
 user-agent = "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/132.0.0.0 Safari/537.36 Edg/132.0.0.0"
 
 
-# 需要配置 referer
+# 需要配置 referer x-xsrf-token
 [comment1_buildComments_headers]
 accept = "application/json, text/plain, */*"
 accept-language = "zh-CN,zh;q=0.9,en;q=0.8,en-GB;q=0.7,en-US;q=0.6"
 client-version = "v2.47.25"
 priority = "u=1, i"
-referer = "https://weibo.com/7327934610/PbmkQlvQx"
+referer = "https://weibo.com/1644114654/OiZre8dir"
 sec-ch-ua = "\"Not A(Brand\";v=\"8\", \"Chromium\";v=\"132\", \"Microsoft Edge\";v=\"132\""
 sec-ch-ua-mobile = "?0"
 sec-ch-ua-platform = "\"Windows\""
@@ -30,16 +30,35 @@ sec-fetch-site = "same-origin"
 server-version = "v2025.01.23.1"
 user-agent = "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/132.0.0.0 Safari/537.36 Edg/132.0.0.0"
 x-requested-with = "XMLHttpRequest"
-
+x-xsrf-token = "seBDSEeh70cZTEWGWWkFmxxG"
 
 # 需要配置 referer
+[comment2_buildComments_headers]
+accept = "application/json, text/plain, */*"
+accept-language = "zh-CN,zh;q=0.9,en;q=0.8,en-GB;q=0.7,en-US;q=0.6"
+client-version = "v2.47.25"
+priority = "u=1, i"
+referer = "https://weibo.com/1644114654/OiZre8dir"
+sec-ch-ua = "\"Not A(Brand\";v=\"8\", \"Chromium\";v=\"132\", \"Microsoft Edge\";v=\"132\""
+sec-ch-ua-mobile = "?0"
+sec-ch-ua-platform = "\"Windows\""
+sec-fetch-dest = "empty"
+sec-fetch-mode = "cors"
+sec-fetch-site = "same-origin"
+server-version = "v2025.01.23.1"
+user-agent = "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/132.0.0.0 Safari/537.36 Edg/132.0.0.0"
+x-requested-with = "XMLHttpRequest"
+x-xsrf-token = "seBDSEeh70cZTEWGWWkFmxxG"
+
+
+# 需要配置 referer  x-xsrf-token
 [comment1_rum_headers]
 accept = "*/*"
 accept-language = "zh-CN,zh;q=0.9,en;q=0.8,en-GB;q=0.7,en-US;q=0.6"
-content-type = "multipart/form-data; boundary=----WebKitFormBoundaryUkdSAdLEMv2OAYMN"
+content-type = "multipart/form-data; boundary=----WebKitFormBoundaryP8RPAfGDm1mdduKE"
 origin = "https://weibo.com"
 priority = "u=1, i"
-referer = "https://weibo.com/7327934610/PbmkQlvQx"
+referer = "https://weibo.com/1644114654/OiZre8dir"
 sec-ch-ua = "\"Not A(Brand\";v=\"8\", \"Chromium\";v=\"132\", \"Microsoft Edge\";v=\"132\""
 sec-ch-ua-mobile = "?0"
 sec-ch-ua-platform = "\"Windows\""
@@ -47,7 +66,24 @@ sec-fetch-dest = "empty"
 sec-fetch-mode = "cors"
 sec-fetch-site = "same-origin"
 user-agent = "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/132.0.0.0 Safari/537.36 Edg/132.0.0.0"
-"x-xsrf-token;" = ""
+x-xsrf-token = "seBDSEeh70cZTEWGWWkFmxxG"
+
+# 需要配置 referer  x-xsrf-token
+[comment2_rum_headers]
+accept = "*/*"
+accept-language = "zh-CN,zh;q=0.9,en;q=0.8,en-GB;q=0.7,en-US;q=0.6"
+content-type = "multipart/form-data; boundary=----WebKitFormBoundary0CRQdyFBn3rj8Xh2"
+origin = "https://weibo.com"
+priority = "u=1, i"
+referer = "https://weibo.com/1644114654/OiZre8dir"
+sec-ch-ua = "\"Not A(Brand\";v=\"8\", \"Chromium\";v=\"132\", \"Microsoft Edge\";v=\"132\""
+sec-ch-ua-mobile = "?0"
+sec-ch-ua-platform = "\"Windows\""
+sec-fetch-dest = "empty"
+sec-fetch-mode = "cors"
+sec-fetch-site = "same-origin"
+user-agent = "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/132.0.0.0 Safari/537.36 Edg/132.0.0.0"
+x-xsrf-token = "seBDSEeh70cZTEWGWWkFmxxG"
 
 
 [cookies]

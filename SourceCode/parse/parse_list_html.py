@@ -3,7 +3,7 @@ import parsel
 import pandas as pd
 from datetime import datetime
 from .util import process_time_str
-from typing import Optional
+from typing import Optional, List
 from ..type import custom_validate_call
 
 
@@ -68,8 +68,25 @@ def get_personal_href(select: parsel.Selector) -> Optional[str]:
     else:
         return "https:" + personal_href
 
+
+def get_weibo_href(select: parsel.Selector) -> Optional[str]:
+    """获取微博的链接
+
+    Args:
+        select (parsel.Selector): 经过 parsel 解析 html 后得到的 Selector 对象
+
+    Returns:
+        Optional[str]: 微博的链接
+    """
+    weibo_href = select.xpath('//div[@class="from"]/a[1]/@href').get()
+    if weibo_href is None:
+        return None
+    else:
+        return "https:" + weibo_href
+
+
 @custom_validate_call
-def get_publish_time(select: parsel.Selector) -> Optional[datetime]:
+def get_publish_time(select: parsel.Selector) -> Optional[str]:
     """获取微博的发布时间
 
     Args:
@@ -82,7 +99,7 @@ def get_publish_time(select: parsel.Selector) -> Optional[datetime]:
     if publish_time_str is None:
         return publish_time_str
     else:
-        publish_time = process_time_str(publish_time_str)
+        publish_time = process_time_str(publish_time_str).strftime("%Y-%m-%d %H:%M:%S")
         return publish_time
 
 @custom_validate_call
@@ -176,34 +193,34 @@ def get_star_num(select: parsel.Selector) -> Optional[int]:
         return None
     
 
-@custom_validate_call
-def parse_list_html(html: str) -> pd.DataFrame:
+# @custom_validate_call
+def parse_list_html(html: str) -> List[dict]:
     """解析微博列表主体的html
 
     Args:
         html (str): 爬虫获取到的 html 文本
 
     Returns:
-        pd.DataFrame: 整理后的 pandas DataFrame
+        List[dict]: 整理后的 List[dict]
     """
     select = parsel.Selector(html)
     div_list = select.xpath('//*[@id="pl_feedlist_index"]//div[@action-type="feed_list_item"]').getall()
     lst = []
     for div_string in div_list:
         select = parsel.Selector(div_string)
-        mid = get_mid(select)
-        uid = get_uid(select)
-        personal_name = get_personal_name(select)
-        personal_href = get_personal_href(select)
-        publish_time = get_publish_time(select)
-        content_from = get_content_from(select)
-        content_final = get_content_all(select)
-        retweet_num = get_retweet_num(select)
-        comment_num = get_comment_num(select)
-        star_num = get_star_num(select)
-        item = [mid, uid, personal_name, personal_href, publish_time, content_from, content_final, retweet_num, comment_num, star_num]
+        item = {
+            "mid": get_mid(select),
+            "uid": get_uid(select),
+            "个人昵称": get_personal_name(select),
+            "个人主页": get_personal_href(select),
+            "微博主页": get_weibo_href(select),
+            "发布时间": get_publish_time(select),
+            "内容来自": get_content_from(select),
+            "全部内容": get_content_all(select),
+            "转发数量": get_retweet_num(select),
+            "评论数量": get_comment_num(select),
+            "点赞数量": get_star_num(select),
+        }
         lst.append(item)
 
-    columns = ["mid", "uid", "个人昵称", "个人主页", "发布时间", "内容来自", "全部内容","转发数量","评论数量","点赞数量"]
-    df = pd.DataFrame(lst, columns=columns)
-    return df
+    return lst

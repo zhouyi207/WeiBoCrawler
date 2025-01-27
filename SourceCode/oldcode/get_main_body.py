@@ -2,7 +2,7 @@
 
 import requests
 from urllib import parse
-from utils.parse_html import get_dataframe_from_html_text
+from oldcode.parse_html import get_dataframe_from_html_text
 import logging
 from rich.progress import track
 import pandas as pd
