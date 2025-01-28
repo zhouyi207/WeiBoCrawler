@@ -3,20 +3,20 @@ from .util import requestparams
 from copy import deepcopy
 from typing import Literal, Optional
 from datetime import datetime
-from ..type import custom_validate_call
-import asyncio
+
+
 
 def get_list_response(search_for: str, page_index: int, *,  kind : Literal["综合", "实时", "高级"] = "综合", 
                       advanced_kind: Literal["综合", "热度", "原创"] = "综合", time_start: Optional[datetime] = None, time_end:Optional[datetime]=None) -> httpx.Response:
     """获取列表页响应
 
     Args:
-        search_for (str): 需要搜索的内容，如果是话题，需要在 search_for 前后都加上 #
+        search_for (str): 需要搜索的内容，如果是话题，需要在 search_for 前后都加上 #.
         page_index (int): 页码
         kind (Literal[, optional): 搜索类型可以是 综合，实时，高级(添加了综合，热度，原创筛选以及时间). Defaults to "综合".
         advanced_kind (Literal[, optional): 筛选条件，可以是综合，热度，原创. Defaults to "综合".
-        time_start (Optional[datetime]): 起始时间，最大颗粒度为小时. Defaults to Optional[datetime].
-        time_end (_type_, optional): 结束时间，最大颗粒度为小时. Defaults to Optional[datetime].
+        time_start (Optional[datetime], optional): 起始时间，最大颗粒度为小时. Defaults to None.
+        time_end (Optional[datetime], optional): 结束时间，最大颗粒度为小时. Defaults to None.
 
     Returns:
         httpx.Response: 返回列表页响应
@@ -68,13 +68,13 @@ async def get_list_response_asyncio(search_for: str, page_index: int, *,  client
     """获取列表页响应(异步)
 
     Args:
-        search_for (str): 需要搜索的内容，如果是话题，需要在 search_for 前后都加上 #
-        page_index (int): 页码
-        client (httpx.AsyncClient): 异步客户端
+        search_for (str): 需要搜索的内容，如果是话题，需要在 search_for 前后都加上 #.
+        page_index (int): 页码.
+        client (httpx.AsyncClient): 异步客户端.
         kind (Literal[, optional): 搜索类型可以是 综合，实时，高级(添加了综合，热度，原创筛选以及时间). Defaults to "综合".
         advanced_kind (Literal[, optional): 筛选条件，可以是综合，热度，原创. Defaults to "综合".
-        time_start (Optional[datetime]): 起始时间，最大颗粒度为小时. Defaults to Optional[datetime].
-        time_end (_type_, optional): 结束时间，最大颗粒度为小时. Defaults to Optional[datetime].
+        time_start (Optional[datetime], optional): 起始时间，最大颗粒度为小时. Defaults to None.
+        time_end (Optional[datetime], optional): 结束时间，最大颗粒度为小时. Defaults to None.
 
     Returns:
         httpx.Response: 返回列表页响应
