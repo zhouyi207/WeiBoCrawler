@@ -20,10 +20,6 @@ class Database_Config(BaseModel):
     comment2: str
 
 
-database_config = Database_Config.model_validate(toml.load("./SourceCode/config.toml")["database"])
-
-
-
 class RequestParams(BaseModel):
     """这个类主要用来保存一些请求参数的东西
 
@@ -43,6 +39,8 @@ class RequestParams(BaseModel):
     cookies: dict
     update_time: datetime = Optional[datetime]
 
+
+database_config = Database_Config.model_validate(toml.load("./SourceCode/config.toml")["database"])
 request_params = RequestParams.model_validate(toml.load("./SourceCode/request/request.toml"))
 
 

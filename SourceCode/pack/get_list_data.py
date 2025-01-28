@@ -68,18 +68,19 @@ class Downloader:
                 await asyncio.gather(*tasks)
                         
 
-    def _download(self):
+    def _download_normal(self):
         """正常下载数据
 
         """
         with CustomProgress() as progress:
             task = progress.add_task("download...", total=50)
-            for i in range(50):
-                resp = get_list_response(search_for=self.search_for, page_index=i+1, kind=self.kind, advanced_kind=self.advanced_kind, time_start=self.time_start, time_end=self.time_end)
+            with httpx.Client() as client:
+                for i in range(50):
+                    resp = get_list_response(search_for=self.search_for, page_index=i+1, client=client, kind=self.kind, advanced_kind=self.advanced_kind, time_start=self.time_start, time_end=self.time_end)
 
-                if self._check_response(resp):
-                    self._process_response(resp)
-                progress.update(task, advance=1, description=f"{i+1:2d}/50")
+                    if self._check_response(resp):
+                        self._process_response(resp)
+                    progress.update(task, advance=1, description=f"{i+1:2d}/50")
 
 
     def _check_response(self, response:httpx.Response) -> bool:
@@ -135,7 +136,7 @@ class Downloader:
             except RuntimeError:
                 asyncio.run(self._download_asyncio())
         else:
-            self._download()
+            self._download_normal()
 
         self.db.close()
 

@@ -1,10 +1,7 @@
 import re
 import parsel
-import pandas as pd
-from datetime import datetime
-from ..util import process_time_str
 from typing import Optional, List
-from ..util import custom_validate_call
+from ..util import custom_validate_call, process_time_str
 
 
 @custom_validate_call
@@ -193,7 +190,6 @@ def get_star_num(select: parsel.Selector) -> Optional[int]:
         return None
     
 
-# @custom_validate_call
 def parse_list_html(html: str) -> List[dict]:
     """解析微博列表主体的html
 

@@ -1,7 +1,7 @@
 import httpx
 import asyncio
 from ..request.get_comment_request import get_comments_l1_response, get_comments_l1_response_asyncio
-from ..parse.process_comment_json import process_comment_resp
+from ..parse.process_comment import process_comment_resp
 from pydantic import BaseModel
 from typing import List, Union
 from ..util import CustomProgress
@@ -114,7 +114,6 @@ class Downloader:
         progress.remove_task(task)
         progress.update(overall_task, advance=1, description=f"总")
 
-
     def _download_normal(self):
         """正常下载数据
 
@@ -128,7 +127,6 @@ class Downloader:
                         progress=progress,
                         client=client,
                         overall_task=overall_task)
-
 
     async def _download_single_asyncio(self, *, id: CommentID, client: httpx.AsyncClient, max_failed_times: int = 20, progress: CustomProgress, overall_task:int):
         """处理单个下载
@@ -172,8 +170,6 @@ class Downloader:
         progress.remove_task(task)
         progress.update(overall_task, advance=1, description=f"总")
 
-
-
     async def _download_asyncio(self):
         """异步下载数据
 
@@ -192,7 +188,6 @@ class Downloader:
                         tasks.append(task)
 
                 await asyncio.gather(*tasks)
-
 
     def download(self, asynchrony: bool = True) -> None:
         self.db = TinyDB(database_config.comment1)

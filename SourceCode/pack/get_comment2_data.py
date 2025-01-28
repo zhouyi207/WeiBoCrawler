@@ -1,7 +1,7 @@
 import httpx
 import asyncio
 from ..request.get_comment_request import get_comments_l2_response, get_comments_l2_response_asyncio
-from ..parse.process_comment_json import process_comment_resp
+from ..parse.process_comment import process_comment_resp
 from pydantic import BaseModel
 from typing import List, Union
 from ..util import CustomProgress

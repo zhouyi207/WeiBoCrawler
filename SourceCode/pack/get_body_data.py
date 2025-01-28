@@ -4,7 +4,7 @@ from typing import List, Union
 import asyncio
 from ..util import CustomProgress
 import httpx
-from ..parse.process_body_json import process_body_resp
+from ..parse.process_body import process_body_resp
 from tinydb import TinyDB
 
 
@@ -57,19 +57,20 @@ class Downloader:
                 await asyncio.gather(*tasks)
 
 
-    def _download(self):
+    def _download_normal(self):
         """正常下载数据
 
         """
         with CustomProgress() as progress:
             task = progress.add_task("download...", total=len(self.ids))
-            for id in self.ids:
-                resp = get_body_response(id=id)
+            with httpx.Client() as client:
+                for id in self.ids:
+                    resp = get_body_response(id=id, client=client)
 
-                if self._check_response(resp):
-                    self._process_response(resp, id=id)
+                    if self._check_response(resp):
+                        self._process_response(resp, id=id)
 
-                progress.update(task, advance=1, description=f"")
+                    progress.update(task, advance=1, description=f"")
 
 
     def _check_response(self, response:httpx.Response) -> bool:
@@ -93,11 +94,11 @@ class Downloader:
             response (httpx.Response): 接受到的响应
             id (str): 微博详细页 id
         """
-        item = process_body_resp(response)
-        self._save_to_database(item, id=id)
+        items = process_body_resp(response)
+        self._save_to_database(items, id=id)
 
 
-    def _save_to_database(self, item:dict, *, id:str) -> None:
+    def _save_to_database(self, items:List[dict], *, id:str) -> None:
         """将 dict 数据保存到数据库中
 
         Args:
@@ -105,7 +106,7 @@ class Downloader:
             id (str): 微博详细页 id
         """
         self.table = self.db.table(id)
-        self.table.insert(item)
+        self.table.insert_multiple(items)
 
 
     def download(self, asynchrony:bool = True) -> None:
@@ -127,7 +128,7 @@ class Downloader:
             except RuntimeError:
                 asyncio.run(self._download_asyncio())
         else:
-            self._download()
+            self._download_normal()
 
         self.db.close()
 
