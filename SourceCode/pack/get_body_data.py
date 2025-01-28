@@ -27,24 +27,34 @@ class Downloader:
         self.db = ""
         self.table = ""
 
+    async def _download_asyncio_task(self, id, client, progress, overall_task):
+        resp = await get_body_response_asyncio(
+                            id=id,
+                            client=client)
+                        
+        if self._check_response(resp):
+            self._process_response(resp, id=id)
+        
+        progress.update(overall_task, advance=1, description=f"")
 
     async def _download_asyncio(self):
         """异步下载数据
 
         """
         with CustomProgress() as progress:
-            task = progress.add_task("download...", total=len(self.ids))
-            async with self.semaphore:
-                async with httpx.AsyncClient() as client:
-                    for id in self.ids:
-                        resp = await get_body_response_asyncio(
+            overall_task = progress.add_task("download...", total=len(self.ids))
+            async with httpx.AsyncClient() as client:
+                tasks = []
+                for id in self.ids:
+                    async with self.semaphore:
+                        task = asyncio.create_task(self._download_asyncio_task(
                             id=id,
-                            client=client)
+                            client=client,
+                            progress=progress,
+                            overall_task=overall_task))
                         
-                        if self._check_response(resp):
-                            self._process_response(resp, id=id)
-
-                        progress.update(task, advance=1, description=f"")
+                        tasks.append(task)
+                await asyncio.gather(*tasks)
 
 
     def _download(self):
@@ -101,10 +111,8 @@ class Downloader:
     def download(self, asynchrony:bool = True) -> None:
         """下载数据
         
-        asynchrony = True 异步下载, 平均 id 耗时为 42/213 = 0.19s
-        asynchrony = False 普通下载, 平均 id 耗时为 88/213 = 0.41s
-        
-        - 差距为已被，但是好像也不是很大（0.0）
+        asynchrony = True 异步下载, 平均 id 耗时为 4/213 = 0.018s
+        asynchrony = False 普通下载, 平均 id 耗时为 88/213 = 0.413s
         
         Args:
             asynchrony (bool, optional): 异步下载或者普通下载. Defaults to True.

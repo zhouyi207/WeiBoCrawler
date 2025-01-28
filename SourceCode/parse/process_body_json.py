@@ -4,8 +4,8 @@
 def process_body_resp(resp):
     item = {}
     data = resp.json()
-    item["mid"] = data["mid"]
-    item["uid"] = data["user"]["id"]
+    item["mid"] = str(data["mid"])
+    item["uid"] = str(data["user"]["id"])
     item["name"] = data["user"]["screen_name"]
     item["text"] = data["text_raw"]
     item["text_raw"] = data["text"]

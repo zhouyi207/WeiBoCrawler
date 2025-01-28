@@ -33,17 +33,8 @@ class Downloader:
         self.db = ""
         self.table = ""
 
-
-    async def _download_asyncio(self):
-        """异步下载数据
-
-        """
-        with CustomProgress() as progress:
-            task = progress.add_task("download...", total=50)
-            async with self.semaphore:
-                async with httpx.AsyncClient() as client:
-                    for i in range(50):
-                        resp = await get_list_response_asyncio(
+    async def _download_asyncio_task(self, i, client, progress, overall_task) -> None:
+        resp = await get_list_response_asyncio(
                             search_for=self.search_for,
                             page_index=i+1,
                             kind=self.kind, 
@@ -52,10 +43,30 @@ class Downloader:
                             time_end=self.time_end, 
                             client=client)
                         
-                        if self._check_response(resp):
-                            self._process_response(resp)
+        if self._check_response(resp):
+            self._process_response(resp)
 
-                        progress.update(task, advance=1, description=f"{i}")
+        progress.update(overall_task, advance=1, description=f"{i}")
+
+    async def _download_asyncio(self):
+        """异步下载数据
+
+        """
+        with CustomProgress() as progress:
+            overall_task = progress.add_task("download...", total=50)
+            async with httpx.AsyncClient() as client:
+                tasks = []
+                for i in range(50):
+                    async with self.semaphore:
+                        task = asyncio.create_task(self._download_asyncio_task(
+                            i=i,
+                            client=client,
+                            progress=progress,
+                            overall_task=overall_task))
+
+                        tasks.append(task)
+                await asyncio.gather(*tasks)
+                        
 
     def _download(self):
         """正常下载数据
@@ -107,10 +118,9 @@ class Downloader:
     def download(self, asynchrony:bool = True) -> None:
         """下载数据
         
-        asynchrony = True 异步下载, 平均时间为 20s
-        asynchrony = False 普通下载, 平均时间为 30s
+        asynchrony = True 异步下载, 平均时间为 <1s/50
+        asynchrony = False 普通下载, 平均时间为 30s/50
         
-        - 差距好像也不是很大（0.0）
         
         Args:
             asynchrony (bool, optional): 异步下载或者普通下载. Defaults to True.
