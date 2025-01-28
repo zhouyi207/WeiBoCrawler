@@ -1,6 +1,6 @@
 import re
 from datetime import datetime, timedelta
-from ..type import custom_validate_call
+from ..util import custom_validate_call
 
 
 @custom_validate_call

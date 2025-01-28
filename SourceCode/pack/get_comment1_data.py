@@ -4,7 +4,7 @@ from ..request.get_comment_request import get_comments_l1_response, get_comments
 from ..parse.process_comment_json import process_comment_resp
 from pydantic import BaseModel
 from typing import List, Union
-from ..type import CustomProgress
+from ..util import CustomProgress
 from tinydb import TinyDB
 from ..database.util import database_config
 from ..request.util import requestparams

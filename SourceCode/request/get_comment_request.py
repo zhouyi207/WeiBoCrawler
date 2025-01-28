@@ -1,7 +1,7 @@
 import httpx
 from .util import requestparams
 from typing import Optional
-from ..type import custom_validate_call
+from ..util import custom_validate_call
 
 def get_comments_l1_response(uid: str, mid : str, *, client: httpx.Client, max_id: Optional[str]=None) -> httpx.Response:
     """获取微博主体的一级评论

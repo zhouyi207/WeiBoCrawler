@@ -2,7 +2,7 @@ from ..database.util import database_config
 from ..request.get_body_request import get_body_response, get_body_response_asyncio
 from typing import List, Union
 import asyncio
-from ..type import CustomProgress
+from ..util import CustomProgress
 import httpx
 from ..parse.process_body_json import process_body_resp
 from tinydb import TinyDB

@@ -4,7 +4,7 @@ import pandas as pd
 from datetime import datetime
 from .util import process_time_str
 from typing import Optional, List
-from ..type import custom_validate_call
+from ..util import custom_validate_call
 
 
 @custom_validate_call

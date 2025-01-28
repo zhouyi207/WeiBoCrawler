@@ -2,7 +2,7 @@ import httpx
 import asyncio
 from tinydb import TinyDB
 from datetime import datetime
-from ..type import CustomProgress
+from ..util import CustomProgress
 from typing import Literal, Optional
 from ..database.util import database_config
 from ..request.get_list_request import get_list_response_asyncio, get_list_response
