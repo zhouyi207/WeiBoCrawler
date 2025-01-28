@@ -1,6 +1,6 @@
-from SourceCode.pack.get_list_data import get_list_data
+# from SourceCode.pack.get_list_data import get_list_data
 
-get_list_data("#姜萍已达到数学系本科生的水平#")
+# get_list_data("#姜萍已达到数学系本科生的水平#")
 
 # **************************************************************************
 
@@ -13,10 +13,14 @@ get_list_data("#姜萍已达到数学系本科生的水平#")
 
 # **************************************************************************
 
+# from SourceCode.pack.get_comment1_data import get_comment1_data
+
+# get_comment1_data(uid=["2035895904", "1749277070", "1644114654"], mid=["5096904217856018", "5045463240409185","5045260761957739"], asynchrony=True)
+
+
+# **************************************************************************
+
 
 # from SourceCode.pack.get_comment2_data import get_comment2_data
 
 # get_comment2_data(uid=["1644114654", "1644114654", "1644114654"], mid=["5045280045531535", "5045270515551948","5045277713760776"], asynchrony=True)
-
-
-# **************************************************************************

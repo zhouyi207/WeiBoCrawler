@@ -6,8 +6,8 @@ from pydantic import BaseModel
 from typing import List, Union
 from ..util import CustomProgress
 from tinydb import TinyDB
-from ..database.util import database_config
-from ..request.util import requestparams
+from ..util import database_config
+from ..util import request_params
 
 
 class CommentID(BaseModel):
@@ -121,7 +121,7 @@ class Downloader:
         """
         with CustomProgress() as progress:
             overall_task = progress.add_task("download...", total=len(self.ids))
-            with httpx.Client(cookies=requestparams.cookies) as client:
+            with httpx.Client(cookies=request_params.cookies) as client:
                 for id in self.ids:
                     self._download_single_normal(
                         id=id,
@@ -180,7 +180,7 @@ class Downloader:
         """
         with CustomProgress() as progress:
             overall_task = progress.add_task("download...", total=len(self.ids))
-            async with httpx.AsyncClient(cookies=requestparams.cookies) as client:
+            async with httpx.AsyncClient(cookies=request_params.cookies) as client:
                 tasks = []
                 for id in self.ids:
                     async with self.semaphore:

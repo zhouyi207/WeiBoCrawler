@@ -1,5 +1,5 @@
 import httpx
-from .util import requestparams
+from ..util import request_params
 
 
 def get_body_response(id: str) -> httpx.Response:
@@ -14,8 +14,8 @@ def get_body_response(id: str) -> httpx.Response:
     Returns:
         httpx.Response: 返回的请求结果.
     """
-    headers = requestparams.body_headers
-    cookies = requestparams.cookies
+    headers = request_params.body_headers
+    cookies = request_params.cookies
     url = "https://weibo.com/ajax/statuses/show"
     params = {
         "id": f"{id}",
@@ -39,8 +39,8 @@ async def get_body_response_asyncio(id:str, *, client: httpx.AsyncClient) -> htt
     Returns:
         httpx.Response: 返回的请求结果.
     """
-    headers = requestparams.body_headers
-    cookies = requestparams.cookies
+    headers = request_params.body_headers
+    cookies = request_params.cookies
     url = "https://weibo.com/ajax/statuses/show"
     params = {
         "id": f"{id}",

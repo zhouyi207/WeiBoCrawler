@@ -2,7 +2,7 @@ import re
 import parsel
 import pandas as pd
 from datetime import datetime
-from .util import process_time_str
+from ..util import process_time_str
 from typing import Optional, List
 from ..util import custom_validate_call
 

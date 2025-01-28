@@ -1,5 +1,5 @@
 import httpx
-from .util import requestparams
+from ..util import request_params
 from copy import deepcopy
 from typing import Literal, Optional
 from datetime import datetime
@@ -50,8 +50,8 @@ def get_list_response(search_for: str, page_index: int, *,  kind : Literal["ç»¼å
 
         url_with_params["params"]["timescope"] = f"custom:{time_start}-{time_end}"
 
-    headers = requestparams.body_headers
-    cookies = requestparams.cookies
+    headers = request_params.body_headers
+    cookies = request_params.cookies
 
     if url_with_params["params"]["page"] > 1:
         referer_url_with_params = deepcopy(url_with_params)
@@ -108,8 +108,8 @@ async def get_list_response_asyncio(search_for: str, page_index: int, *,  client
 
         url_with_params["params"]["timescope"] = f"custom:{time_start}-{time_end}"
 
-    headers = requestparams.body_headers
-    cookies = requestparams.cookies
+    headers = request_params.body_headers
+    cookies = request_params.cookies
 
     if url_with_params["params"]["page"] > 1:
         referer_url_with_params = deepcopy(url_with_params)

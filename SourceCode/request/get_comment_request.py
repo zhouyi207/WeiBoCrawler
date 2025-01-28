@@ -1,5 +1,5 @@
 import httpx
-from .util import requestparams
+from ..util import request_params
 from typing import Optional
 from ..util import custom_validate_call
 
@@ -16,7 +16,7 @@ def get_comments_l1_response(uid: str, mid : str, *, client: httpx.Client, max_i
         httpx.Response: 评论的响应
     """
     buildComments_url = "https://weibo.com/ajax/statuses/buildComments"
-    buildComments_headers = requestparams.comment1_buildComments_headers
+    buildComments_headers = request_params.comment1_buildComments_headers
 
     buildComments_params = {
         "is_reload": "1",
@@ -49,7 +49,7 @@ async def get_comments_l1_response_asyncio(uid: str, mid : str, *, client: httpx
         httpx.Response: 评论的响应
     """
     buildComments_url = "https://weibo.com/ajax/statuses/buildComments"
-    buildComments_headers = requestparams.comment1_buildComments_headers
+    buildComments_headers = request_params.comment1_buildComments_headers
 
     buildComments_params = {
         "is_reload": "1",
@@ -83,7 +83,7 @@ def get_comments_l2_response(uid: str, mid : str, *, client: httpx.Client, max_i
         httpx.Response: 评论的响应
     """
     buildComments_url = "https://weibo.com/ajax/statuses/buildComments"
-    buildComments_headers = requestparams.comment2_buildComments_headers
+    buildComments_headers = request_params.comment2_buildComments_headers
     
     buildComments_params = {
         "flow": "0", # 0 表示按热度, 1 表示按时间
@@ -119,7 +119,7 @@ async def get_comments_l2_response_asyncio(uid: str, mid : str, *, client: httpx
         httpx.Response: 评论的响应
     """
     buildComments_url = "https://weibo.com/ajax/statuses/buildComments"
-    buildComments_headers = requestparams.comment2_buildComments_headers
+    buildComments_headers = request_params.comment2_buildComments_headers
     
     buildComments_params = {
         "flow": "0", # 0 表示按热度, 1 表示按时间
