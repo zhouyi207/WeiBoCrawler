@@ -1,16 +1,13 @@
 import httpx
-import asyncio
-from tinydb import TinyDB
 from datetime import datetime
-from ..util import CustomProgress
-from typing import Literal, Optional
-from ..util import database_config
+from typing import Literal, Optional, Any
+from ..util import database_config, CustomProgress
 from ..request.get_list_request import get_list_response_asyncio, get_list_response
 from ..parse.parse_list_html import parse_list_html
+from .BaseDownloader import BaseDownloader
 
 
-
-class Downloader:
+class Downloader(BaseDownloader):
     def __init__(self, search_for: str, *,  kind : Literal["综合", "实时", "高级"] = "综合", 
                       advanced_kind: Literal["综合", "热度", "原创"] = "综合", time_start: Optional[datetime] = None, time_end:Optional[datetime]=None, concurrency: int = 100):
         """下载 List 页面数据, 并保存在数据库的 search_for 表中, 数据库位置在 database_config 中.
@@ -23,122 +20,94 @@ class Downloader:
             time_end (Optional[datetime], optional): 结束时间，最大颗粒度为小时. Defaults to Optional[datetime].
             concurrency (int, optional): 异步最大并发. Defaults to 100.
         """
-        self.semaphore = asyncio.Semaphore(concurrency)
+        super().__init__(concurrency=concurrency)
+
         self.search_for = search_for
         self.kind = kind
         self.advanced_kind = advanced_kind
         self.time_start = time_start
         self.time_end = time_end
-        
-        self.db = ""
-        self.table = ""
 
-    async def _download_asyncio_task(self, i, client, progress, overall_task) -> None:
-        resp = await get_list_response_asyncio(
+
+    def _get_request_description(self) -> str:
+        """获取进度条描述
+
+        Returns:
+            str: 进度条描述
+        """
+        return "download..."
+
+    def _get_request_params(self) -> list:
+        """获取请求参数列表
+
+        Returns:
+            list: 请求参数列表
+        """
+        return list(range(1, 51))
+
+    def _get_database_path(self) -> str:
+        """获取数据库路径
+
+        Returns:
+            str: 数据库路径
+        """
+        return database_config.list
+
+    def _process_response(self, response: httpx.Response, *, table_name: str) -> None:
+        """处理请求并存储数据
+
+        Args:
+            response (httpx.Response): 需要处理的请求
+            table_name (str): 存储的位置(数据表名)
+        """
+        items = parse_list_html(response.text)
+        self._save_to_database(items, table_name=table_name)
+
+    async def _download_single_asyncio(self, *, param:Any, client:httpx.Response, progress:CustomProgress, overall_task:int):
+        """下载单个请求(异步)
+
+        Args:
+            param (Any): 请求参数
+            client (httpx.Response): 请求客户端
+            progress (CustomProgress): 进度条
+            overall_task (int): 进度条任务ID
+        """
+        response = await get_list_response_asyncio(
                             search_for=self.search_for,
-                            page_index=i+1,
-                            kind=self.kind, 
+                            kind=self.kind,
                             advanced_kind=self.advanced_kind, 
                             time_start=self.time_start, 
                             time_end=self.time_end, 
+                            page_index=param,
                             client=client)
                         
-        if self._check_response(resp):
-            self._process_response(resp)
-
-        progress.update(overall_task, advance=1, description=f"{i}")
-
-    async def _download_asyncio(self):
-        """异步下载数据
-
-        """
-        with CustomProgress() as progress:
-            overall_task = progress.add_task("download...", total=50)
-            async with httpx.AsyncClient() as client:
-                tasks = []
-                for i in range(50):
-                    async with self.semaphore:
-                        task = asyncio.create_task(self._download_asyncio_task(
-                            i=i,
-                            client=client,
-                            progress=progress,
-                            overall_task=overall_task))
-
-                        tasks.append(task)
-                await asyncio.gather(*tasks)
-                        
-
-    def _download_normal(self):
-        """正常下载数据
-
-        """
-        with CustomProgress() as progress:
-            task = progress.add_task("download...", total=50)
-            with httpx.Client() as client:
-                for i in range(50):
-                    resp = get_list_response(search_for=self.search_for, page_index=i+1, client=client, kind=self.kind, advanced_kind=self.advanced_kind, time_start=self.time_start, time_end=self.time_end)
-
-                    if self._check_response(resp):
-                        self._process_response(resp)
-                    progress.update(task, advance=1, description=f"{i+1:2d}/50")
-
-
-    def _check_response(self, response:httpx.Response) -> bool:
-        """检查响应是否正常
-
-        Args:
-            response (httpx.Response): 接受到的响应
-
-        Returns:
-            bool: 有问题返回 False, 否则返回 True
-        """
-        return response.status_code == httpx.codes.OK
-
-
-    def _process_response(self, response:httpx.Response) -> None:
-        """处理响应
-        1. 首先解析网页
-        2. 然后保存到数据库中
-
-        Args:
-            response (httpx.Response): 接受到的响应
-        """
-        items = parse_list_html(response.text)
-        self._save_to_database(items)
-
-
-    def _save_to_database(self, items:list) -> None:
-        """将 list[dict] 数据保存到数据库中
-
-        Args:
-            items (list): 接受到的 list[dict] 数据
-        """
-        self.table.insert_multiple(items)
-
-
-    def download(self, asynchrony:bool = True) -> None:
-        """下载数据
+        if self._check_response(response):
+            self._process_response(response, table_name=self.search_for)
         
-        asynchrony = True 异步下载, 平均时间为 <1s/50
-        asynchrony = False 普通下载, 平均时间为 30s/50
-        
-        
+        progress.update(overall_task, advance=1, description=f"{param}...")
+
+    def _download_single_sync(self, *, param: Any, client:httpx.Response, progress:CustomProgress, overall_task:int):
+        """下载单个请求(同步)
+
         Args:
-            asynchrony (bool, optional): 异步下载或者普通下载. Defaults to True.
+            param (Any): 请求参数
+            client (httpx.Response): 请求客户端
+            progress (CustomProgress): 进度条
+            overall_task (int): 进度条任务ID
         """
-        self.db = TinyDB(database_config.list)
-        self.table = self.db.table(self.search_for)
-
-        if asynchrony:
-            try:
-                loop = asyncio.get_running_loop()
-                loop.run_until_complete(self._download_asyncio())
-            except RuntimeError:
-                asyncio.run(self._download_asyncio())
-        else:
-            self._download_normal()
-
-        self.db.close()
+        response = get_list_response(
+                            search_for=self.search_for,
+                            kind=self.kind,
+                            advanced_kind=self.advanced_kind,
+                            time_start=self.time_start,
+                            time_end=self.time_end,
+                            page_index=param,
+                            client=client)
+        
+        if self._check_response(response):
+            self._process_response(response, table_name=self.search_for)
+        
+        progress.update(overall_task, advance=1, description=f"{param}") 
 
 
 def get_list_data(search_for: str, *,  asynchrony: bool = True, kind : Literal["综合", "实时", "高级"] = "综合", 
