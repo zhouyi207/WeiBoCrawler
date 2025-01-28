@@ -12,17 +12,16 @@ def build_body_params(id: str) -> tuple:
         id (str): 微博详细页id.
 
     Returns:
-        tuple: (url, params, headers, cookies).
+        tuple: (url, params, headers).
     """
     headers = request_params.body_headers
-    cookies = request_params.cookies
     url = "https://weibo.com/ajax/statuses/show"
     params = {
         "id": f"{id}",
         "locale": "zh-CN",
         "isGetLongText": "true"
     }
-    return url, params, headers, cookies
+    return url, params, headers
 
 
 def get_body_response(id: str, *, client: httpx.Client) -> httpx.Response:
@@ -38,8 +37,8 @@ def get_body_response(id: str, *, client: httpx.Client) -> httpx.Response:
     Returns:
         httpx.Response: 返回的请求结果.
     """
-    url, params, headers, cookies = build_body_params(id)
-    response = client.get(url, headers=headers, cookies=cookies, params=params)
+    url, params, headers = build_body_params(id)
+    response = client.get(url, params=params, headers=headers)
     return response
 
 
@@ -56,6 +55,6 @@ async def get_body_response_asyncio(id:str, *, client: httpx.AsyncClient) -> htt
     Returns:
         httpx.Response: 返回的请求结果.
     """
-    url, params, headers, cookies = build_body_params(id)
-    response = await client.get(url, headers=headers, cookies=cookies, params=params)
+    url, params, headers = build_body_params(id)
+    response = await client.get(url, params=params, headers=headers)
     return response

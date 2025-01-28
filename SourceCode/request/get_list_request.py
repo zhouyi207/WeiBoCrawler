@@ -50,7 +50,6 @@ def build_list_params(search_for: str, page_index: int, *,  kind : Literal["综�
         url_with_params["params"]["timescope"] = f"custom:{time_start}-{time_end}"
 
     headers = request_params.body_headers
-    cookies = request_params.cookies
 
     if url_with_params["params"]["page"] > 1:
         referer_url_with_params = deepcopy(url_with_params)
@@ -58,7 +57,7 @@ def build_list_params(search_for: str, page_index: int, *,  kind : Literal["综�
         headers["referer"] = str(httpx.URL(url_with_params["url"], params=referer_url_with_params["params"]))
 
     url = httpx.URL(url=url_with_params["url"], params=url_with_params["params"])
-    return url, headers, cookies
+    return url, headers
 
 
 def get_list_response(search_for: str, page_index: int, *, client: httpx.Client, kind : Literal["综合", "实时", "高级"] = "综合", 
@@ -77,8 +76,8 @@ def get_list_response(search_for: str, page_index: int, *, client: httpx.Client,
     Returns:
         httpx.Response: 返回列表页响应
     """
-    url, headers, cookies = build_list_params(search_for, page_index, kind=kind, advanced_kind=advanced_kind, time_start=time_start, time_end=time_end)
-    response = httpx.get(url, headers=headers, cookies=cookies)
+    url, headers = build_list_params(search_for, page_index, kind=kind, advanced_kind=advanced_kind, time_start=time_start, time_end=time_end)
+    response = httpx.get(url, headers=headers)
     return response
 
 
@@ -98,6 +97,6 @@ async def get_list_response_asyncio(search_for: str, page_index: int, *,  client
     Returns:
         httpx.Response: 返回列表页响应
     """
-    url, headers, cookies = build_list_params(search_for, page_index, kind=kind, advanced_kind=advanced_kind, time_start=time_start, time_end=time_end)
-    response = await client.get(url, headers=headers, cookies=cookies)
+    url, headers = build_list_params(search_for, page_index, kind=kind, advanced_kind=advanced_kind, time_start=time_start, time_end=time_end)
+    response = await client.get(url, headers=headers)
     return response
