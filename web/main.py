@@ -11,15 +11,14 @@ st.set_page_config(
     initial_sidebar_state="expanded",
 )
 
+test_page = st.Page("./web_pages/database/search_database.py", title="数据展示", icon=":material/add_circle:")
 
-demo_page = st.Page("./web_pages/demo.py", title="测试", icon=":material/add_circle:")
-test_page = st.Page("./web_pages/test.py", title="测试", icon=":material/add_circle:")
+demo_page = st.Page("./web_pages/test.py", title="测试", icon=":material/add_circle:")
 
 
 pg = st.navigation({
-    "测试": [demo_page],
     "数据库": [test_page],
+    "测试": [demo_page],
 })
-
 
 pg.run()
