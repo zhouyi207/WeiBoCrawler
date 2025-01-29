@@ -12,6 +12,8 @@ from rich.progress import (
     TimeElapsedColumn,
 )
 
+import pandas as pd
+from tinydb.table import Table
 
 class Database_Config(BaseModel):
     list: str
@@ -117,8 +119,17 @@ def process_time_str(time_str:str) -> datetime:
 
 
 
+def drop_table_duplicates(table: Table) -> pd.DataFrame:
+    """_summary_
 
+    Args:
+        table (table.Table): _description_
 
-
-
-
+    Returns:
+        pd.DataFrame: _description_
+    """
+    df = pd.json_normalize(table.all())
+    df.drop_duplicates(inplace=True)
+    table.truncate()
+    table.insert_multiple(df.to_dict(orient="records"))
+    return df

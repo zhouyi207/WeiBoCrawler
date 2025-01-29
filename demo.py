@@ -1,6 +1,6 @@
-# from WeiBoCrawler.pack.get_list_data import get_list_data
+from WeiBoCrawler.pack.get_list_data import get_list_data
 
-# get_list_data("#姜萍已达到数学系本科生的水平#")
+get_list_data("#姜萍已达到数学系本科生的水平#")
 
 # **************************************************************************
 

@@ -22,7 +22,6 @@ df = process_list_table(table)
 st.dataframe(df)
 
 
-
 db = TinyDB(database_config.body)
 st.write(db.tables())
 
