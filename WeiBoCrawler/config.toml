@@ -1,0 +1,5 @@
+[database]
+list = "./WeiBoCrawler/database/list.json"
+body = "./WeiBoCrawler/database/body.json"
+comment1 = "./WeiBoCrawler/database/comment1.json"
+comment2 = "./WeiBoCrawler/database/comment2.json"

@@ -40,8 +40,8 @@ class RequestParams(BaseModel):
     update_time: datetime = Optional[datetime]
 
 
-database_config = Database_Config.model_validate(toml.load("./SourceCode/config.toml")["database"])
-request_params = RequestParams.model_validate(toml.load("./SourceCode/request/request.toml"))
+database_config = Database_Config.model_validate(toml.load("./WeiBoCrawler/config.toml")["database"])
+request_params = RequestParams.model_validate(toml.load("./WeiBoCrawler/request/request.toml"))
 
 
 class CustomProgress:
