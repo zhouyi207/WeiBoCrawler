@@ -1,20 +1,22 @@
-# from typing import Optional
-# from pydantic import BaseModel
+import pandas as pd
+from ..util import drop_table_duplicates, Table
 
-# class ListItem(BaseModel):
-#     mid : Optional[str]
-#     uid : Optional[str]
-#     personal_name : Optional[str]
-#     personal_href : Optional[str]
-#     weibo_href : Optional[str]
-#     publish_time : Optional[str]
-#     content_from : Optional[str]
-#     content_all : Optional[str]
-#     retweet_num : Optional[int]
-#     comment_num : Optional[int]
-#     star_num : Optional[int]
-
-
-# def process_list_json(list_json):
-#     return [ListItem.model_validate(item) for item in list_json]
-    
+def process_list_table(table: Table) -> pd.DataFrame:
+    df = drop_table_duplicates(table)
+    need_info = {
+        "mid" : "mid",
+        "uid" : "uid",
+        "mblogid" : "mblogid",
+        "personal_name" : "个人昵称",
+        "personal_href" : "个人主页",
+        "weibo_href" : "微博链接",
+        "publish_time" : "发布时间",
+        "content_from" : "内容来自",
+        "content_all" : "全部内容",
+        "retweet_num" : "转发数量",
+        "comment_num" : "评论数量",
+        "star_num" : "点赞数量",
+    }
+    df = df[list(need_info.keys())]
+    df.rename(columns=need_info, inplace=True)
+    return df

@@ -35,6 +35,23 @@ def get_uid(select: parsel.Selector) -> Optional[str]:
         uid = re.search(r"/(\d+)/?", uid).group(1)
         return uid
 
+@custom_validate_call
+def get_mblogid(select: parsel.Selector) -> Optional[str]:
+    """获取微博的mblogid
+
+    Args:
+        select (parsel.Selector): 经过 parsel 解析 html 后得到的 Selector 对象
+
+    Returns:
+        Optional[str]: 微博的mblogid
+    """
+    mblogid = select.xpath('//div[@class="from"]/a[1]/@href').get()
+    if mblogid is None:
+        return None
+    else:
+        mblogid = re.search(r"/(\w+)\?", mblogid).group(1)
+        return mblogid
+
 
 @custom_validate_call
 def get_personal_name(select: parsel.Selector) -> Optional[str]:
@@ -207,6 +224,7 @@ def parse_list_html(html: str) -> List[dict]:
         item = {
             "mid": get_mid(select),
             "uid": get_uid(select),
+            "mblogid": get_mblogid(select),
             "personal_name": get_personal_name(select),
             "personal_href": get_personal_href(select),
             "weibo_href": get_weibo_href(select),

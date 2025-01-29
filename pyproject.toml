@@ -12,6 +12,7 @@ dependencies = [
     "parsel>=1.9.1",
     "pydantic>=2.10.6",
     "rich>=13.7.1",
+    "streamlit>=1.41.1",
     "tinydb>=4.8.2",
     "toml>=0.10.2",
 ]

@@ -1,7 +1,8 @@
 from typing import Tuple
 import httpx
 from pydantic import BaseModel
-
+import pandas as pd
+from ..util import drop_table_duplicates, Table
 
 class CommmentResponseInfo(BaseModel):
     max_id: str
@@ -29,3 +30,8 @@ def process_comment_resp(resp: httpx.Response) -> Tuple[CommmentResponseInfo, li
     data = resp.json()
     resp_info = CommmentResponseInfo(max_id=str(data["max_id"]), total_number=int(data["total_number"]), data_number=len(data["data"]))
     return resp_info, data["data"]
+
+
+def process_comment_table(table: Table) -> pd.DataFrame:
+    df = drop_table_duplicates(table)
+    return df
