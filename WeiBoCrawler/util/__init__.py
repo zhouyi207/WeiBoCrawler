@@ -3,7 +3,7 @@ from datetime import datetime, timedelta
 from typing import Callable, Optional
 
 import toml
-from pydantic import BaseModel, validate_call
+from pydantic import BaseModel, validate_call, field_validator
 from rich.progress import (
     BarColumn,
     MofNCompleteColumn,
@@ -13,13 +13,21 @@ from rich.progress import (
 )
 
 import pandas as pd
+from pathlib import Path
 from tinydb.table import Table
+
+module_path = Path(__file__).parent.parent
+
 
 class Database_Config(BaseModel):
     list: str
     body: str
     comment1: str
     comment2: str
+
+    @field_validator('list', 'body', 'comment1', 'comment2')
+    def add_module_path(cls, value):
+        return str(module_path / value)
 
 
 class RequestParams(BaseModel):
@@ -42,8 +50,10 @@ class RequestParams(BaseModel):
     update_time: datetime = Optional[datetime]
 
 
-database_config = Database_Config.model_validate(toml.load("./WeiBoCrawler/config.toml")["database"])
-request_params = RequestParams.model_validate(toml.load("./WeiBoCrawler/request/request.toml"))
+database_config_path = module_path / "./config.toml"
+request_params_path = module_path / "./request/request.toml"
+database_config = Database_Config.model_validate(toml.load(database_config_path)["database"])
+request_params = RequestParams.model_validate(toml.load(request_params_path))
 
 
 class CustomProgress:

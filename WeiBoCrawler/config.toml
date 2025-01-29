@@ -1,5 +1,5 @@
 [database]
-list = "./WeiBoCrawler/database/list.json"
-body = "./WeiBoCrawler/database/body.json"
-comment1 = "./WeiBoCrawler/database/comment1.json"
-comment2 = "./WeiBoCrawler/database/comment2.json"
+list = "./database/list.json"
+body = "./database/body.json"
+comment1 = "./database/comment1.json"
+comment2 = "./database/comment2.json"
