@@ -129,17 +129,60 @@ def process_time_str(time_str:str) -> datetime:
 
 
 
-def drop_table_duplicates(table: Table) -> pd.DataFrame:
-    """_summary_
+def drop_table_duplicates(table: Table) -> None:
+    """表格去重
+    这里暂时使用最简单的列表去重法, 后续可以考虑使用 hash 去重等方法优化..
 
     Args:
-        table (table.Table): _description_
+        table (Table): 需要去重的表
+    """
+    unique_document = []
+    for document in table.all():
+        if document not in unique_document:
+            unique_document.append(document)
+    
+    table.truncate()
+    table.insert_multiple(unique_document)
+
+
+def process_base_table(table: Table, transform_dict: dict) -> pd.DataFrame:
+    """将表处理成 dataframe 的形式
+    
+    transform_dict = {
+            "转发数量": "retweet_num",
+            "评论数量": "comment_num",
+            "点赞数量": "star_num",
+            ...
+        }
+
+    Args:
+        table (Table): 需要处理的表
+        transform_dict (dict): 转换字典, key 是转化后的字段, value 是原始字段
 
     Returns:
-        pd.DataFrame: _description_
+        pd.DataFrame: (去重)处理后得到的表格
     """
-    df = pd.json_normalize(table.all())
+    items = []
+    for document in table.all():
+        item = {}
+        try:
+            for key, value in transform_dict.items():
+                if isinstance(value, str):
+                    final_value = document.get(value, None)
+
+                elif isinstance(value, list):
+                    final_value = document
+                    for v in value:
+                        if final_value is None:
+                            break
+                        final_value = final_value.get(v, None)
+
+                item[key] = final_value
+        except Exception as e:
+            print(e)
+            print(document)
+            
+        items.append(item)
+    df = pd.DataFrame(items)
     df.drop_duplicates(inplace=True)
-    table.truncate()
-    table.insert_multiple(df.to_dict(orient="records"))
     return df

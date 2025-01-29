@@ -14,5 +14,6 @@
 - [ ] 解析数据库. 在 parse 目录下 制作 process_xxx_json(TinyDB.table) -> pd.DataFrame 函数, 在这里实现一下数据库去重的逻辑(TinyDB)好像并没有去重的逻辑
 - [x] 构建请求中的 headers 可以装在 client 中.（不可以，有的请求需要处理 headers）
 - [x] 给 list 的 request 结果 添加 微博id 参数，与 body 保持一致.
-- [ ] 前端初步搭建
+- [ ] 前端初步搭建：数据展示.
 - [ ] 模块的路径导入最好改用相对文件本身路径而不是使用项目路径
+- [ ] drop_table_duplicates 函数 暂时使用最简单的列表去重法, 后续可以考虑使用 hash 去重等方法优化..

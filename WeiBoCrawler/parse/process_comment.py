@@ -2,7 +2,7 @@ from typing import Tuple
 import httpx
 from pydantic import BaseModel
 import pandas as pd
-from ..util import drop_table_duplicates, Table
+from ..util import process_base_table, Table
 
 class CommmentResponseInfo(BaseModel):
     max_id: str
@@ -33,5 +33,38 @@ def process_comment_resp(resp: httpx.Response) -> Tuple[CommmentResponseInfo, li
 
 
 def process_comment_table(table: Table) -> pd.DataFrame:
-    df = drop_table_duplicates(table)
+    """将表处理成 dataframe 的形式
+    
+    transform_dict = {
+            "转发数量": "retweet_num",
+            "评论数量": "comment_num",
+            "点赞数量": "star_num",
+            ...
+        }
+
+    Args:
+        table (Table): 需要处理的表
+        transform_dict (dict): 转换字典, key 是转化后的字段, value 是原始字段
+
+    Returns:
+        pd.DataFrame: (去重)处理后得到的表格
+    """
+    transform_dict = {
+            "mid": "mid",
+            "uid": ["user", "id"],
+            "个人昵称": ["user", "screen_name"],
+            "用户性别": ["user", "gender"],
+            "用户定位": ["user", "location"],
+            "用户粉丝": ["user", "followers_count"],
+            "用户累计评论数": ["user", "status_total_counter", "comment_cnt"],
+            "用户累计转发数": ["user", "status_total_counter", "repost_cnt"],
+            "用户累计点赞数": ["user", "status_total_counter", "like_cnt"],
+            "用户累计评转赞": ["user", "status_total_counter", "total_cnt"],
+            "发布时间": "created_at",
+            "原生内容": "text",
+            "展示内容": "text_raw",
+            "评论数量": "total_number",
+            "点赞数量": "like_counts",
+        }
+    df = process_base_table(table, transform_dict)
     return df
