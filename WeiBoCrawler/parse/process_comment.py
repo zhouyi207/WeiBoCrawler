@@ -2,7 +2,7 @@ from typing import Tuple
 import httpx
 from pydantic import BaseModel
 import pandas as pd
-from ..util import process_base_table, Table
+from ..util import process_base_documents
 
 class CommmentResponseInfo(BaseModel):
     max_id: str
@@ -32,7 +32,7 @@ def process_comment_resp(resp: httpx.Response) -> Tuple[CommmentResponseInfo, li
     return resp_info, data["data"]
 
 
-def process_comment_table(table: Table) -> pd.DataFrame:
+def process_comment_documents(documents: list[dict]) -> pd.DataFrame:
     """将表处理成 dataframe 的形式
     
     transform_dict = {
@@ -66,5 +66,5 @@ def process_comment_table(table: Table) -> pd.DataFrame:
             "评论数量": "total_number",
             "点赞数量": "like_counts",
         }
-    df = process_base_table(table, transform_dict)
+    df = process_base_documents(documents, transform_dict)
     return df

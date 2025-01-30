@@ -1,5 +1,5 @@
 import pandas as pd
-from ..util import process_base_table, Table
+from ..util import process_base_documents, Table
 
 def process_body_resp(resp):
     """处理详细页数据
@@ -15,8 +15,8 @@ def process_body_resp(resp):
     return [data]
 
 
-def process_body_table(table: Table) -> pd.DataFrame:
-    """将表处理成 dataframe 的形式
+def process_body_documents(documents: list[dict]) -> pd.DataFrame:
+    """将 documents 处理成 dataframe 的形式
     
     transform_dict = {
             "转发数量": "retweet_num",
@@ -26,7 +26,7 @@ def process_body_table(table: Table) -> pd.DataFrame:
         }
 
     Args:
-        table (Table): 需要处理的表
+        documents (list[dict]): 文档列表
         transform_dict (dict): 转换字典, key 是转化后的字段, value 是原始字段
 
     Returns:
@@ -54,5 +54,5 @@ def process_body_table(table: Table) -> pd.DataFrame:
             "评论数量": "comments_count",
             "点赞数量": "attitudes_count",
         }
-    df = process_base_table(table, transform_dict)
+    df = process_base_documents(documents, transform_dict)
     return df

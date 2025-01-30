@@ -147,8 +147,9 @@ def drop_table_duplicates(table: Table) -> None:
     table.insert_multiple(unique_document)
 
 
-def process_base_table(table: Table, transform_dict: dict) -> pd.DataFrame:
-    """将表处理成 dataframe 的形式
+
+def process_base_documents(documents: list[dict], transform_dict: dict) -> pd.DataFrame:
+    """将 documents 处理成 dataframe 的形式
     
     transform_dict = {
             "转发数量": "retweet_num",
@@ -158,31 +159,28 @@ def process_base_table(table: Table, transform_dict: dict) -> pd.DataFrame:
         }
 
     Args:
-        table (Table): 需要处理的表
+        documents (list[dict]): 文档列表
         transform_dict (dict): 转换字典, key 是转化后的字段, value 是原始字段
 
     Returns:
         pd.DataFrame: (去重)处理后得到的表格
     """
     items = []
-    for document in table.all():
+    for document in documents:
         item = {}
-        try:
-            for key, value in transform_dict.items():
-                if isinstance(value, str):
-                    final_value = document.get(value, None)
 
-                elif isinstance(value, list):
-                    final_value = document
-                    for v in value:
-                        if final_value is None:
-                            break
-                        final_value = final_value.get(v, None)
+        for key, value in transform_dict.items():
+            if isinstance(value, str):
+                final_value = document.get(value, None)
 
-                item[key] = final_value
-        except Exception as e:
-            print(e)
-            print(document)
+            elif isinstance(value, list):
+                final_value = document
+                for v in value:
+                    if final_value is None:
+                        break
+                    final_value = final_value.get(v, None)
+
+            item[key] = final_value
             
         items.append(item)
     df = pd.DataFrame(items)
