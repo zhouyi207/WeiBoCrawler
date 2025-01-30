@@ -1,6 +1,6 @@
 import httpx
 from typing import Any
-from ..util import CustomProgress, database_config
+from ..util import CustomProgress, database_config, retry_timeout_decorator, retry_timeout_decorator_asyncio
 from ..parse.process_body import process_body_resp
 from .BaseDownloader import BaseDownloader
 from ..request.get_body_request import get_body_response, get_body_response_asyncio
@@ -56,6 +56,7 @@ class Downloader(BaseDownloader):
         items = process_body_resp(response)
         self._save_to_database(items)
 
+    @retry_timeout_decorator_asyncio
     async def _download_single_asyncio(self, *, param:Any, client:httpx.Response, progress:CustomProgress, overall_task:int):
         """下载单个请求(异步)
 
@@ -74,6 +75,7 @@ class Downloader(BaseDownloader):
         
         progress.update(overall_task, advance=1, description=f"{param}")
 
+    @retry_timeout_decorator
     def _download_single_sync(self, *, param: Any, client:httpx.Response, progress:CustomProgress, overall_task:int):
         """下载单个请求(同步)
 

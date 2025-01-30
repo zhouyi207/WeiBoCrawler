@@ -1,7 +1,7 @@
 import httpx
 from datetime import datetime
 from typing import Literal, Optional, Any
-from ..util import database_config, CustomProgress
+from ..util import database_config, CustomProgress, retry_timeout_decorator, retry_timeout_decorator_asyncio
 from ..request.get_list_request import get_list_response_asyncio, get_list_response
 from ..parse.parse_list_html import parse_list_html
 from .BaseDownloader import BaseDownloader
@@ -64,6 +64,7 @@ class Downloader(BaseDownloader):
         items = parse_list_html(response.text)
         self._save_to_database(items)
 
+    @retry_timeout_decorator_asyncio
     async def _download_single_asyncio(self, *, param:Any, client:httpx.Response, progress:CustomProgress, overall_task:int):
         """下载单个请求(异步)
 
@@ -87,6 +88,7 @@ class Downloader(BaseDownloader):
         
         progress.update(overall_task, advance=1, description=f"{param}...")
 
+    @retry_timeout_decorator
     def _download_single_sync(self, *, param: Any, client:httpx.Response, progress:CustomProgress, overall_task:int):
         """下载单个请求(同步)
 

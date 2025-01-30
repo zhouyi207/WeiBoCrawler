@@ -2,7 +2,7 @@ import httpx
 from ..request.get_comment_request import get_comments_l2_response, get_comments_l2_response_asyncio
 from ..parse.process_comment import process_comment_resp
 from typing import List, Union, Any
-from ..util import CustomProgress
+from ..util import CustomProgress, retry_timeout_decorator, retry_timeout_decorator_asyncio
 from ..util import database_config
 from .BaseDownloader import BaseDownloader, CommentID
 
@@ -72,6 +72,7 @@ class Downloader(BaseDownloader):
         self._save_to_database(items)
         return resp_info
 
+    @retry_timeout_decorator_asyncio
     async def _download_single_asyncio(self, *, param:Any, client:httpx.Response, progress:CustomProgress, overall_task:int):
         """下载单个请求(异步)
         1. 在这里首先处理第一个评论，因为第一个评论是不需要 max_id 的，所以这里单独处理
@@ -111,6 +112,7 @@ class Downloader(BaseDownloader):
             progress.remove_task(task)
         progress.update(overall_task, advance=1, description=f"{param.mid}")
 
+    @retry_timeout_decorator
     def _download_single_sync(self, *, param: Any, client:httpx.Response, progress:CustomProgress, overall_task:int):
         """下载单个请求(同步)
         1. 在这里首先处理第一个评论，因为第一个评论是不需要 max_id 的，所以这里单独处理
