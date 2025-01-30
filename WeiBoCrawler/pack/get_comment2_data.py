@@ -146,7 +146,7 @@ class Downloader(BaseDownloader):
             progress.remove_task(task)
         progress.update(overall_task, advance=1, description=f"{param.mid}")
 
-def get_comment2_data(uid: Union[List[str], str], mid: Union[List[str], str], *, asynchrony: bool = True) -> None:
+def get_comment2_data(uid: Union[List[str], str], mid: Union[List[str], str], *, asynchrony: bool = True) -> list:
     """根据 uid 和 mid 下载评论数据，并保存在数据库的 mid 表中, 数据库位置在 database_config 中
 
     Args:
@@ -156,6 +156,10 @@ def get_comment2_data(uid: Union[List[str], str], mid: Union[List[str], str], *,
 
     Raises:
         ValueError: uid and mid must be both str or list and the length of uid and mid must be equal.
+
+    Returns:
+        list: 存储在数据库中的 id 列表
     """
     downloader = Downloader(uid=uid, mid=mid)
     downloader.download(asynchrony=asynchrony)
+    return downloader.doc_id

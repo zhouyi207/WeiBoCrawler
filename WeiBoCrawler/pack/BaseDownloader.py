@@ -18,6 +18,7 @@ class BaseDownloader(ABC):
     def __init__(self, concurrency: int = 100):
         self.semaphore = asyncio.Semaphore(concurrency)
         self.db = None
+        self.doc_id = []
 
     @abstractmethod
     def _get_request_description(self) -> str:
@@ -99,7 +100,8 @@ class BaseDownloader(ABC):
             table_name (str): 存储的位置(数据表名)
         """
         table = self.db.table(table_name)
-        table.insert_multiple(items)
+        doc_id = table.insert_multiple(items)
+        self.doc_id.extend(doc_id)
 
     async def _download_asyncio(self):
         """异步下载数据
