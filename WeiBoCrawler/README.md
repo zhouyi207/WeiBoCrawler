@@ -26,3 +26,31 @@
 - [x] 在下载前后检测数据表的状态，将变化的状态保存下来，方便知道新下载到哪里.
 - [ ] get_body_data 中 数据表名为 id 改为需要 给定数据表名.
 - [ ] 在 BaseDownloader.py 文件中添加日志功能，观察输出.
+- [ ] 抽象类出现带参数的装饰器报错
+
+向下面这样是不行的...
+def retry_timeout_decorator_asyncio(retry_times: int = 3) -> Callable:
+    def _retry_timeout_decorator_asyncio(func: Callable) -> Callable:
+        """超时重试装饰器(异步)
+
+        Args:
+            retry_times (int): 重试次数. Defaults to 3.
+
+        Returns:
+            Callable: 装饰后的函数
+        """
+        async def wrapper(*args, **kwargs):  # 将 wrapper 改为异步函数
+            attempts = 0
+            while attempts < retry_times:
+                try:
+                    return await func(*args, **kwargs)  # 调用异步函数并使用 await
+                except httpx.TimeoutException as e:
+                    attempts += 1
+                    if attempts < retry_times:
+                        logging.warning(f"请求超时，正在进行第 {attempts} 次重试...")
+                    else:
+                        logging.error(f"请求超时，重试次数已达到最大值，请检查网络连接或重试次数！错误原因{e}")
+        return wrapper
+    return _retry_timeout_decorator_asyncio
+
+
