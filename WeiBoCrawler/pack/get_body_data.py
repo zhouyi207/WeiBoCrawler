@@ -95,16 +95,17 @@ class Downloader(BaseDownloader):
 
 
 
-def get_body_data(id: list[str] | str, *,  asynchrony: bool = True) -> list:
+def get_body_data(id: list[str] | str, *, table_name:str, asynchrony: bool = True) -> list:
     """获取 body 页面数据
 
     Args:
         id (Union[List[str], str]): 微博详细页 id, 或者 id 列表.
+        table_name (str): 存储的位置(数据表名)
         asynchrony (bool, optional): _description_. Defaults to True.
 
     Returns:
         list: 存储在数据库中的 id 列表
     """
-    downloader = Downloader(id = id)
+    downloader = Downloader(id = id, table_name=table_name)
     downloader.download(asynchrony=asynchrony)
     return downloader.doc_id
