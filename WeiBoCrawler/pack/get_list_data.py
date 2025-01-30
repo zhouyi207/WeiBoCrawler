@@ -54,7 +54,7 @@ class Downloader(BaseDownloader):
         """
         return database_config.list
 
-    def _process_response(self, response: httpx.Response, *, params: Any) -> None:
+    def _process_response(self, response: httpx.Response, *, param: Any) -> None:
         """处理请求并存储数据
 
         Args:
