@@ -7,11 +7,12 @@ from ..request.get_body_request import get_body_response, get_body_response_asyn
 
 
 class Downloader(BaseDownloader):
-    def __init__(self, id: list[str] | str, *, concurrency: int = 100):
+    def __init__(self, id: list[str] | str, *, table_name:str, concurrency: int = 100):
         """下载 Body 页面数据, 并保存在数据库的 id 表中, 数据库位置在 database_config 中.
 
         Args:
             id (Union[List[str], str]): 微博详细页 id, 或者 id 列表.
+            table_name (str): 存储的位置(数据表名)
             concurrency (int, optional): 异步最大并发. Defaults to 100.
         """
         super().__init__(concurrency=concurrency)
@@ -21,6 +22,7 @@ class Downloader(BaseDownloader):
         else:
             self.ids = id
 
+        self.table_name = table_name
 
     def _get_request_description(self) -> str:
         """获取进度条描述
@@ -87,7 +89,7 @@ class Downloader(BaseDownloader):
                             id=param,
                             client=client)
         if self._check_response(response):
-            self._process_response(response, table_name=param)
+            self._process_response(response, table_name=self.table_name)
         
         progress.update(overall_task, advance=1, description=f"{param}") 
 
