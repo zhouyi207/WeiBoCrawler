@@ -28,7 +28,12 @@ def process_comment_resp(resp: httpx.Response) -> Tuple[CommmentResponseInfo, li
         Tuple[dict, list]: 前面是 请求的信息(后面要用到), 后面是数据
     """
     data = resp.json()
-    resp_info = CommmentResponseInfo(max_id=str(data["max_id"]), total_number=int(data["total_number"]), data_number=len(data["data"]))
+    
+    max_id = data.get("max_id", "")
+    total_number = data.get("total_number", 0)
+    data_number = len(data.get("data", []))
+
+    resp_info = CommmentResponseInfo(max_id=str(max_id), total_number=int(total_number), data_number=data_number)
     return resp_info, data["data"]
 
 
