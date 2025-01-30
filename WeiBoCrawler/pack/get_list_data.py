@@ -111,7 +111,7 @@ class Downloader(BaseDownloader):
 
 
 def get_list_data(search_for: str, *,  asynchrony: bool = True, kind : Literal["综合", "实时", "高级"] = "综合", 
-                      advanced_kind: Literal["综合", "热度", "原创"] = "综合", time_start: Optional[datetime] = None, time_end:Optional[datetime]=None) -> None:
+                      advanced_kind: Literal["综合", "热度", "原创"] = "综合", time_start: Optional[datetime] = None, time_end:Optional[datetime]=None) -> list:
     """获取 List 页面数据
 
     Args:
@@ -121,6 +121,10 @@ def get_list_data(search_for: str, *,  asynchrony: bool = True, kind : Literal["
         advanced_kind (Literal[, optional): 筛选条件，可以是综合，热度，原创. Defaults to "综合".
         time_start (Optional[datetime], optional): 起始时间，最大颗粒度为小时. Defaults to None.
         time_end (Optional[datetime], optional): 结束时间，最大颗粒度为小时. Defaults to None.
+    
+    Returns:
+        list: 存储在数据库中的 id 列表
     """
     downloader = Downloader(search_for=search_for, kind=kind, advanced_kind=advanced_kind, time_start=time_start, time_end=time_end)
     downloader.download(asynchrony=asynchrony)
+    return downloader.doc_id
