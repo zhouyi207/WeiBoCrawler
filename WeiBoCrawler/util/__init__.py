@@ -16,6 +16,8 @@ import pandas as pd
 from pathlib import Path
 from tinydb.table import Table
 
+import logging
+
 module_path = Path(__file__).parent.parent
 
 
@@ -186,3 +188,39 @@ def process_base_table(table: Table, transform_dict: dict) -> pd.DataFrame:
     df = pd.DataFrame(items)
     df.drop_duplicates(inplace=True)
     return df
+
+
+# 配置日志
+logging.basicConfig(
+    filename=module_path / "./app.log",
+    level=logging.INFO, 
+    format='%(asctime)s - %(levelname)s - %(name)s - %(message)s',
+    encoding="utf-8",
+)
+
+
+def log_function_params(logger: logging.Logger):
+    """记录函数的参数和返回值
+
+    Args:
+        func (Callable): 需要装饰的函数
+           
+    Returns:
+        Callable: 装饰后的函数
+    """
+    def log_function_params_(func:Callable) -> Callable:
+        def wrapper(*args, **kwargs):
+            # 记录函数名和参数
+            args_repr = [repr(a) for a in args]
+            kwargs_repr = [f"{k}={v!r}" for k, v in kwargs.items()]
+            signature = ", ".join(args_repr + kwargs_repr)
+            logger.info(f"Calling Function {func.__name__}({signature})")
+            
+            # 调用原函数
+            result = func(*args, **kwargs)
+            
+            # 记录返回值
+            logger.info(f"Function {func.__name__} returned {result!r}")
+            return result
+        return wrapper
+    return log_function_params_

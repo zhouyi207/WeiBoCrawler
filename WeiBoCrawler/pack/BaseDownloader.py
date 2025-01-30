@@ -7,7 +7,9 @@ from pydantic import BaseModel
 from tinydb import TinyDB
 
 from ..util import CustomProgress, request_params
+from ..util import logging, log_function_params
 
+logger = logging.getLogger(__name__)
 
 class CommentID(BaseModel):
     uid: str
@@ -81,6 +83,7 @@ class BaseDownloader(ABC):
         """
         ...
 
+    @log_function_params(logger=logger)
     def _check_response(self, response: httpx.Response) -> bool:
         """检查响应是否正常
 
@@ -92,6 +95,7 @@ class BaseDownloader(ABC):
         """
         return response.status_code == httpx.codes.OK
 
+    @log_function_params(logger=logger)
     def _save_to_database(self, items: list[dict], *, table_name: str) -> None:
         """保存数据到数据库
 
