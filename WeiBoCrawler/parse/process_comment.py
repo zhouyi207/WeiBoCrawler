@@ -50,21 +50,23 @@ def process_comment_documents(documents: list[dict]) -> pd.DataFrame:
         pd.DataFrame: (去重)处理后得到的表格
     """
     transform_dict = {
-            "mid": "mid",
-            "uid": ["user", "id"],
-            "个人昵称": ["user", "screen_name"],
-            "用户性别": ["user", "gender"],
-            "用户定位": ["user", "location"],
-            "用户粉丝": ["user", "followers_count"],
-            "用户累计评论数": ["user", "status_total_counter", "comment_cnt"],
-            "用户累计转发数": ["user", "status_total_counter", "repost_cnt"],
-            "用户累计点赞数": ["user", "status_total_counter", "like_cnt"],
-            "用户累计评转赞": ["user", "status_total_counter", "total_cnt"],
-            "发布时间": "created_at",
-            "原生内容": "text",
-            "展示内容": "text_raw",
-            "评论数量": "total_number",
-            "点赞数量": "like_counts",
-        }
+        "f_mid": "f_mid",
+        "f_uid": "f_uid",
+        "mid": "mid",
+        "uid": ["user", "id"],
+        "个人昵称": ["user", "screen_name"],
+        "用户性别": ["user", "gender"],
+        "用户定位": ["user", "location"],
+        "用户粉丝": ["user", "followers_count"],
+        "用户累计评论数": ["user", "status_total_counter", "comment_cnt"],
+        "用户累计转发数": ["user", "status_total_counter", "repost_cnt"],
+        "用户累计点赞数": ["user", "status_total_counter", "like_cnt"],
+        "用户累计评转赞": ["user", "status_total_counter", "total_cnt"],
+        "发布时间": "created_at",
+        "原生内容": "text",
+        "展示内容": "text_raw",
+        "评论数量": "total_number",
+        "点赞数量": "like_counts",
+    }
     df = process_base_documents(documents, transform_dict)
     return df

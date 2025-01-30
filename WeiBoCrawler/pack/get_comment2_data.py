@@ -67,8 +67,8 @@ class Downloader(BaseDownloader):
         """
         resp_info, items = process_comment_resp(response)
         for item in items:
-            item["mid"] = param.mid
-            item["uid"] = param.uid
+            item["f_mid"] = param.mid
+            item["f_uid"] = param.uid
         self._save_to_database(items)
         return resp_info
 
