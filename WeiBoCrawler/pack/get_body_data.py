@@ -7,7 +7,7 @@ from ..request.get_body_request import get_body_response, get_body_response_asyn
 
 
 class Downloader(BaseDownloader):
-    def __init__(self, id: list[str] | str, *, table_name:str, concurrency: int = 100):
+    def __init__(self, id: list[str] | str, *, table_name: str, concurrency: int = 100):
         """下载 Body 页面数据, 并保存在数据库的 id 表中, 数据库位置在 database_config 中.
 
         Args:
@@ -15,14 +15,12 @@ class Downloader(BaseDownloader):
             table_name (str): 存储的位置(数据表名)
             concurrency (int, optional): 异步最大并发. Defaults to 100.
         """
-        super().__init__(concurrency=concurrency)
+        super().__init__(table_name=table_name, concurrency=concurrency)
 
         if isinstance(id, str):
             self.ids = [id]
         else:
             self.ids = id
-
-        self.table_name = table_name
 
     def _get_request_description(self) -> str:
         """获取进度条描述
@@ -48,15 +46,15 @@ class Downloader(BaseDownloader):
         """
         return database_config.body
 
-    def _process_response(self, response: httpx.Response, *, table_name: str) -> None:
+    def _process_response(self, response: httpx.Response, *, param: Any) -> None:
         """处理请求并存储数据
 
         Args:
             response (httpx.Response): 需要处理的请求
-            table_name (str): 存储的位置(数据表名)
+            param (Any): 请求参数
         """
         items = process_body_resp(response)
-        self._save_to_database(items, table_name=table_name)
+        self._save_to_database(items)
 
     async def _download_single_asyncio(self, *, param:Any, client:httpx.Response, progress:CustomProgress, overall_task:int):
         """下载单个请求(异步)
@@ -72,7 +70,7 @@ class Downloader(BaseDownloader):
                             client=client)
                         
         if self._check_response(response):
-            self._process_response(response, table_name=param)
+            self._process_response(response, param=param)
         
         progress.update(overall_task, advance=1, description=f"{param}")
 
@@ -89,7 +87,7 @@ class Downloader(BaseDownloader):
                             id=param,
                             client=client)
         if self._check_response(response):
-            self._process_response(response, table_name=self.table_name)
+            self._process_response(response, param=param)
         
         progress.update(overall_task, advance=1, description=f"{param}") 
 

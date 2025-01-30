@@ -8,19 +8,20 @@ from .BaseDownloader import BaseDownloader, CommentID
 
 
 class Downloader(BaseDownloader):
-    def __init__(self, *, uid: Union[List[str], str], mid: Union[List[str], str], concurrency: int = 100, max_failed_times: int = 20) -> None:
+    def __init__(self, *, uid: Union[List[str], str], mid: Union[List[str], str], table_name: str, concurrency: int = 100, max_failed_times: int = 20) -> None:
         """根据 uid 和 mid 下载评论数据，并保存在数据库的 mid 表中, 数据库位置在 database_config 中
 
         Args:
             uid (Union[List[str], str]): 用户 ID
             mid (Union[List[str], str]): 信息 ID
+            table_name (str): 存储的位置(数据表名)
             concurrency (int, optional): 最大异步并发. Defaults to 100.
             max_failed_times (int, optional): 最大失败次数. Defaults to 20.
 
         Raises:
             ValueError: uid and mid must be both str or list and the length of uid and mid must be equal.
         """
-        super().__init__(concurrency=concurrency)
+        super().__init__(table_name=table_name, concurrency=concurrency)
 
         if isinstance(uid, str) and isinstance(mid, str):
             self.ids = [CommentID(uid=uid, mid=mid)]
@@ -56,7 +57,7 @@ class Downloader(BaseDownloader):
         """
         return database_config.comment1
 
-    def _process_response(self, response: httpx.Response, *, table_name: str) -> None:
+    def _process_response(self, response: httpx.Response, *, param: Any) -> None:
         """处理请求并存储数据
 
         Args:
@@ -64,7 +65,12 @@ class Downloader(BaseDownloader):
             table_name (str): 存储的位置(数据表名)
         """
         resp_info, items = process_comment_resp(response)
-        self._save_to_database(items, table_name=table_name)
+
+        for item in items:
+            item["f_mid"] = param.mid
+            item["f_uid"] = param.uid
+
+        self._save_to_database(items)
         return resp_info
 
     async def _download_single_asyncio(self, *, param:Any, client:httpx.Response, progress:CustomProgress, overall_task:int):
@@ -82,7 +88,7 @@ class Downloader(BaseDownloader):
         """
         response = await get_comments_l1_response_asyncio(uid=param.uid, mid=param.mid, client=client)
         if self._check_response(response):
-            resp_info = self._process_response(response, table_name=param.mid)
+            resp_info = self._process_response(response, param=param)
             max_id = resp_info.max_id
             total_number = resp_info.total_number
             count_data_number = resp_info.data_number
@@ -93,7 +99,7 @@ class Downloader(BaseDownloader):
             while (failed_times < self.max_failed_times) and (count_data_number < total_number):
                 response = await get_comments_l1_response_asyncio(uid=param.uid, mid=param.mid, client=client, max_id=max_id)
                 if self._check_response(response):
-                    resp_info = self._process_response(response, table_name=param.mid)
+                    resp_info = self._process_response(response, param=param)
                     max_id = resp_info.max_id
                     count_data_number += resp_info.data_number
                     failed_times = 0 if resp_info.data_number != 0 else failed_times + 1
@@ -121,7 +127,7 @@ class Downloader(BaseDownloader):
         """
         response = get_comments_l1_response(uid=param.uid, mid=param.mid, client=client)
         if self._check_response(response):
-            resp_info = self._process_response(response, table_name=param.mid)
+            resp_info = self._process_response(response, param=param)
             max_id = resp_info.max_id
             total_number = resp_info.total_number
             count_data_number = resp_info.data_number
@@ -132,7 +138,7 @@ class Downloader(BaseDownloader):
             while (failed_times < self.max_failed_times) and (count_data_number < total_number):
                 response = get_comments_l1_response(uid=param.uid, mid=param.mid, client=client, max_id=max_id)
                 if self._check_response(response):
-                    resp_info = self._process_response(response, table_name=param.mid)
+                    resp_info = self._process_response(response, param=param)
                     max_id = resp_info.max_id
                     count_data_number += resp_info.data_number
                     failed_times = 0 if resp_info.data_number != 0 else failed_times + 1
@@ -146,12 +152,13 @@ class Downloader(BaseDownloader):
         progress.update(overall_task, advance=1, description=f"{param.mid}")
 
 
-def get_comment1_data(uid: Union[List[str], str], mid: Union[List[str], str], *, asynchrony: bool = True) -> list:
+def get_comment1_data(uid: Union[List[str], str], mid: Union[List[str], str], *, table_name:str, asynchrony: bool = True) -> list:
     """根据 uid 和 mid 下载评论数据，并保存在数据库的 mid 表中, 数据库位置在 database_config 中
 
     Args:
         uid (Union[List[str], str]): 用户 ID
         mid (Union[List[str], str]): 信息 ID
+        table_name (str): 存储的位置(数据表名)
         concurrency (int, optional): 最大异步并发. Defaults to 100.
 
     Raises:
@@ -160,6 +167,6 @@ def get_comment1_data(uid: Union[List[str], str], mid: Union[List[str], str], *,
     Returns:
         list: 存储在数据库中的 id 列表
     """
-    downloader = Downloader(uid=uid, mid=mid)
+    downloader = Downloader(uid=uid, mid=mid, table_name=table_name)
     downloader.download(asynchrony=asynchrony)
     return downloader.doc_id

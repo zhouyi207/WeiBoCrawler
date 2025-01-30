@@ -17,7 +17,8 @@ class CommentID(BaseModel):
 
 
 class BaseDownloader(ABC):
-    def __init__(self, concurrency: int = 100):
+    def __init__(self, *, table_name: str, concurrency: int = 100):
+        self.table_name = table_name
         self.semaphore = asyncio.Semaphore(concurrency)
         self.db = None
         self.doc_id = []
@@ -50,12 +51,12 @@ class BaseDownloader(ABC):
         ...
 
     @abstractmethod
-    def _process_response(self, response: httpx.Response, *, table_name: str) -> None:
+    def _process_response(self, response: httpx.Response, *, param: Any) -> None:
         """处理请求并存储数据
 
         Args:
             response (httpx.Response): 需要处理的请求
-            table_name (str): 存储的位置(数据表名)
+            param (Any): 请求参数
         """
         ...
 
@@ -96,14 +97,14 @@ class BaseDownloader(ABC):
         return response.status_code == httpx.codes.OK
 
     @log_function_params(logger=logger)
-    def _save_to_database(self, items: list[dict], *, table_name: str) -> None:
+    def _save_to_database(self, items: list[dict]) -> None:
         """保存数据到数据库
 
         Args:
             items (list[dict]): 数据列表
-            table_name (str): 存储的位置(数据表名)
         """
-        table = self.db.table(table_name)
+        table = self.db.table(self.table_name)
+
         doc_id = table.insert_multiple(items)
         self.doc_id.extend(doc_id)
 
