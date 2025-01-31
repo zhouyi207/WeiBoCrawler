@@ -27,12 +27,6 @@ class DatabaseManager:
         self.sync_session = sessionmaker(self.sync_engine, expire_on_commit=False)
         self.async_session = async_sessionmaker(self.async_engine, class_=AsyncSession, expire_on_commit=False)
 
-        # 被包装的类
-        self.BodyRecord: BodyRecord = BodyRecord
-        self.CommentRecord: Comment1Record = Comment1Record
-        self.CommentRecord: Comment2Record = Comment2Record
-        self.RecordFrom = RecordFrom
-
     def sync_create_tables(self):
         """同步创建表
         
@@ -215,3 +209,6 @@ class DatabaseManager:
         """
         inspector = inspect(self.sync_engine)
         return inspector.get_table_names()
+
+
+__all__ = [BodyRecord, Comment1Record, Comment2Record, RecordFrom, DatabaseManager]

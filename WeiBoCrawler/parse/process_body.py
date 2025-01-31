@@ -1,5 +1,5 @@
 import pandas as pd
-from ..util import process_base_documents, Table
+from ..util import process_base_document, process_base_documents
 
 def process_body_resp(resp):
     """处理详细页数据
@@ -12,6 +12,11 @@ def process_body_resp(resp):
         list[dict]: 响应的数据, 这里使用 list 包装一下(对齐其他的process请求).
     """
     data = resp.json()
+    transform_dict = {
+            "mid": "mid",
+            "uid": ["user", "idstr"],
+    }
+    data.update(process_base_document(data, transform_dict))
     return [data]
 
 

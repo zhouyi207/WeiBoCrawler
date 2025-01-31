@@ -4,8 +4,8 @@ from typing import Any
 
 import httpx
 from pydantic import BaseModel
-from tinydb import TinyDB
 
+from ..database import db, BodyRecord, Comment1Record, Comment2Record, RecordFrom
 from ..util import CustomProgress, request_params
 from ..util import logging, log_function_params
 
@@ -20,8 +20,8 @@ class BaseDownloader(ABC):
     def __init__(self, *, table_name: str, concurrency: int = 100):
         self.table_name = table_name
         self.semaphore = asyncio.Semaphore(concurrency)
-        self.db = None
-        self.doc_id = []
+        self.db = db
+        self.res_ids = []
 
     @abstractmethod
     def _get_request_description(self) -> str:
@@ -42,16 +42,17 @@ class BaseDownloader(ABC):
         ...
 
     @abstractmethod
-    def _get_database_path(self) -> str:
-        """获取数据库路径
+    def _process_response(self, response: httpx.Response, *, param: Any) -> None:
+        """处理请求并存储数据
 
-        Returns:
-            str: 数据库路径
+        Args:
+            response (httpx.Response): 需要处理的请求
+            param (Any): 请求参数
         """
         ...
 
     @abstractmethod
-    def _process_response(self, response: httpx.Response, *, param: Any) -> None:
+    async def _process_response_asyncio(self, response: httpx.Response, *, param: Any) -> None:
         """处理请求并存储数据
 
         Args:
@@ -84,6 +85,24 @@ class BaseDownloader(ABC):
         """
         ...
 
+    def _save_to_database(self, items: list[BodyRecord | Comment1Record | Comment2Record]) -> None:
+        """保存数据到数据库
+
+        Args:
+            items (list[dict]): 数据列表
+        """
+        res_ids = self.db.sync_add_records(items)
+        self.res_ids.extend(res_ids)
+
+    async def _save_to_database_asyncio(self, items: list[BodyRecord | Comment1Record | Comment2Record]) -> None:
+        """保存数据到数据库(异步)
+
+        Args:
+            items (list[dict]): 数据列表
+        """
+        res_ids = await self.db.async_add_records(items)
+        self.res_ids.extend(res_ids)
+
     @log_function_params(logger=logger)
     def _check_response(self, response: httpx.Response) -> bool:
         """检查响应是否正常
@@ -96,17 +115,6 @@ class BaseDownloader(ABC):
         """
         return response.status_code == httpx.codes.OK
 
-    @log_function_params(logger=logger)
-    def _save_to_database(self, items: list[dict]) -> None:
-        """保存数据到数据库
-
-        Args:
-            items (list[dict]): 数据列表
-        """
-        table = self.db.table(self.table_name)
-
-        doc_id = table.insert_multiple(items)
-        self.doc_id.extend(doc_id)
 
     async def _download_asyncio(self):
         """异步下载数据
@@ -152,8 +160,6 @@ class BaseDownloader(ABC):
         Args:
             asynchrony (bool, optional): 异步下载或者普通下载. Defaults to True.
         """
-        self.db = TinyDB(self._get_database_path())
-
         if asynchrony:
             try:
                 loop = asyncio.get_running_loop()
@@ -163,4 +169,5 @@ class BaseDownloader(ABC):
         else:
             self._download_sync()
 
-        self.db.close()
+
+__all__ = [BaseDownloader, BodyRecord, Comment1Record, Comment2Record, RecordFrom]

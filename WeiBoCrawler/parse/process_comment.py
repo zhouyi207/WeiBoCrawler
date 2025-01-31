@@ -2,7 +2,7 @@ from typing import Tuple
 import httpx
 from pydantic import BaseModel
 import pandas as pd
-from ..util import process_base_documents
+from ..util import process_base_documents, process_base_document
 
 class CommmentResponseInfo(BaseModel):
     max_id: str
@@ -28,13 +28,24 @@ def process_comment_resp(resp: httpx.Response) -> Tuple[CommmentResponseInfo, li
         Tuple[dict, list]: 前面是 请求的信息(后面要用到), 后面是数据
     """
     data = resp.json()
-    
     max_id = data.get("max_id", "")
     total_number = data.get("total_number", 0)
     data_number = len(data.get("data", []))
 
+    data_list = data["data"]
+
+    transform_dict = {
+            "mid": "mid",
+            "uid": ["user", "idstr"],
+    }
+    
+    [data.update(process_base_document(data, transform_dict)) for data in data_list]
+
     resp_info = CommmentResponseInfo(max_id=str(max_id), total_number=int(total_number), data_number=data_number)
-    return resp_info, data["data"]
+    return resp_info, data_list
+
+
+
 
 
 def process_comment_documents(documents: list[dict]) -> pd.DataFrame:
