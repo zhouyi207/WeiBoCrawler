@@ -23,14 +23,14 @@ module_path = Path(__file__).parent.parent
 
 
 class Database_Config(BaseModel):
-    list: str
-    body: str
-    comment1: str
-    comment2: str
+    path: str
 
-    @field_validator('list', 'body', 'comment1', 'comment2')
-    def add_module_path(cls, value):
-        return str(module_path / value)
+    @field_validator('path')
+    def modify_module_path(cls, value):
+        if Path(value).is_absolute():
+            return str(value)
+        else:
+            return str(module_path / value)
 
 
 class RequestParams(BaseModel):

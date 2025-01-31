@@ -1,5 +1,2 @@
 [database]
-list = "./database/list.json"
-body = "./database/body.json"
-comment1 = "./database/comment1.json"
-comment2 = "./database/comment2.json"
+path = "../数据库.db"
