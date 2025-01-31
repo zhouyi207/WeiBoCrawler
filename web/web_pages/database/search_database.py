@@ -4,7 +4,8 @@ sys.path.append(".")
 import streamlit as st
 from tinydb import TinyDB
 from WeiBoCrawler.util import database_config
-from WeiBoCrawler.parse import process_list_table, process_body_table, process_comment_table
+from WeiBoCrawler.parse import process_body_documents, process_list_documents, process_comment_documents
+
 
 database_path = {
     "list": database_config.list,
@@ -27,10 +28,13 @@ with cols[1]:
 
 
 if select_database in ["comment1", "comment2"]:
-    st.write(process_comment_table(table))
+    pass
+    # st.write(process_comment_table(table))
 
 if select_database == "body":
-    st.write(process_body_table(table))
+    # st.write(process_body_table(table))
+    pass
 
 if select_database == "list":
-    st.write(process_list_table(table))
+    # st.write(process_list_table(table))
+    pass

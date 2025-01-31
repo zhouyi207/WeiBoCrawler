@@ -1,1 +1,12 @@
 *.pyc
+*.json
+
+
+demo.*
+test.*
+
+uv.lock
+pyproject.toml
+.python-version
+
+.vscode/

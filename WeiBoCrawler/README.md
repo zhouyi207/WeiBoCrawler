@@ -61,3 +61,4 @@ def retry_timeout_decorator_asyncio(retry_times: int = 3) -> Callable:
 2025.01.31
 
 - [ ] tinydb 这个玩意啊，5700条数据的时候插入一下要 1s，这是什么逆天的速度，我靠了.....想办法用其他数据库把，这玩意太影响速度了.....
+- [ ] database 解耦，方便使用定义的数据库.
