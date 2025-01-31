@@ -29,6 +29,9 @@
 - [ ] 抽象类出现带参数的装饰器报错
 
 向下面这样是不行的...
+
+
+```python
 def retry_timeout_decorator_asyncio(retry_times: int = 3) -> Callable:
     def _retry_timeout_decorator_asyncio(func: Callable) -> Callable:
         """超时重试装饰器(异步)
@@ -52,5 +55,9 @@ def retry_timeout_decorator_asyncio(retry_times: int = 3) -> Callable:
                         logging.error(f"请求超时，重试次数已达到最大值，请检查网络连接或重试次数！错误原因{e}")
         return wrapper
     return _retry_timeout_decorator_asyncio
+```
 
 
+2025.01.31
+
+- [ ] tinydb 这个玩意啊，5700条数据的时候插入一下要 1s，这是什么逆天的速度，我靠了.....想办法用其他数据库把，这玩意太影响速度了.....
