@@ -20,7 +20,7 @@
 
 2025.1.30
 
-- [ ] 如果要实现更好的数据库效果，可以根据 mid 合并而不是 list body comment 分别展示，必须要实现字段统一.
+- [x] 如果要实现更好的数据库效果，可以根据 mid 合并而不是 list body comment 分别展示，必须要实现字段统一.
 - [ ] 由于是将所有请求的结果都保存在数据库，而展示的结果都是经过字段处理后的结果，需要给一个功能寻找指定数据的源数据.
 - [ ] 给 uitl 添加 __all__ = []
 - [x] 在下载前后检测数据表的状态，将变化的状态保存下来，方便知道新下载到哪里.
@@ -62,3 +62,64 @@ def retry_timeout_decorator_asyncio(retry_times: int = 3) -> Callable:
 
 - [ ] tinydb 这个玩意啊，5700条数据的时候插入一下要 1s，这是什么逆天的速度，我靠了.....想办法用其他数据库把，这玩意太影响速度了.....
 - [ ] database 解耦，方便使用定义的数据库.
+- [ ] 在使用 sqlalchemy 库操作数据库的时候，sessionmaker 中设置 expire_on_commit=False 可以避免在提交事务时自动刷新对象的状态，从而提高性能，但可能会出现脏读的现象，但是就我们的操作而言，单线程异步是不会出现脏读的情况的.
+
+
+在设置 sessionmaker 中 expire_on_commit=True 的时候，在提交事务时自动刷新对象的状态，以异步为例子
+
+```python
+    async def async_add_records(self, records: list[ListRecord | BodyRecord | Comment1Record | Comment2Record ]) -> list[int]:
+        """异步插入记录
+        
+        Args:
+            records (list[ListRecord | BodyRecord | Comment1Record | Comment2Record ]): 记录列表
+        
+        Returns:
+            list[int]: id列表
+        """
+        async with self.async_session() as session:
+            try:
+                session.add_all(records)
+                await session.commit()
+                return [record.id for record in records]
+            except Exception as e:
+                await session.rollback()
+                logging.error(f"插入记录时出现异常: {e}", exc_info=True)
+                return []
+```
+
+如果 expire_on_commit=True, 那么在提交事务时，会自动刷新对象的状态，即重新查询数据库中的数据，以确保数据的一致性。但是这里的查询是同步的，而 session 是异步会话，会出现在异步会话中调用同步功能的操作，这是一个 bug. 正确的处理方式是，使用异步去刷新 records 的状态.
+
+
+```python
+    async def async_add_records(self, records: list[ListRecord | BodyRecord | Comment1Record | Comment2Record ]) -> list[int]:
+        """异步插入记录
+        
+        Args:
+            records (list[ListRecord | BodyRecord | Comment1Record | Comment2Record ]): 记录列表
+        
+        Returns:
+            list[int]: id列表
+        """
+        async with self.async_session() as session:
+            try:
+                session.add_all(records)
+                await session.commit()
+                # 修改的地方
+                ids = []
+                for record in records:
+                    await session.refresh(record)
+                    ids.append(record.id)
+                return ids
+            except Exception as e:
+                await session.rollback()
+                logging.error(f"插入记录时出现异常: {e}", exc_info=True)
+                return []
+```
+
+这样就可以了.
+
+
+- [x] tinydb 5700 条数据后要1s一条, sqlite 150000 条数据后 0.02s 一条. 我宣布我不认识 tinydb.... 
+- [ ] tmd... sqlalchemy 在设置 relationship 的时候, 如果从表有多个外键，主表调用 relationship 函数中 foreign_keys 没用啊，老是报错, 只能使用 primaryjoin 函数来操作... 好煞笔.
+- [ ] 我宣布 sqlalchemy 是个很傻鸟的库，妈的，定义那么多类型完全看不过来是干鸡毛，看你开源的份上作者我就不骂你了....  **peewee** 持续关注!

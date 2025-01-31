@@ -2,7 +2,7 @@ import logging
 from sqlalchemy import select, inspect, create_engine
 from sqlalchemy.orm import sessionmaker
 from sqlalchemy.ext.asyncio import create_async_engine, AsyncSession, async_sessionmaker
-from .sql_record import AbstractBase, ListRecord, BodyRecord, Comment1Record, Comment2Record
+from .sql_record import Base, BodyRecord, Comment1Record, Comment2Record, RecordFrom
 
 logging.basicConfig(level=logging.INFO, encoding="utf-8")
 
@@ -28,30 +28,30 @@ class DatabaseManager:
         self.async_session = async_sessionmaker(self.async_engine, class_=AsyncSession, expire_on_commit=False)
 
         # 被包装的类
-        self.ListRecord: ListRecord = ListRecord
-        self.BodyRecord: ListRecord = BodyRecord
+        self.BodyRecord: BodyRecord = BodyRecord
         self.CommentRecord: Comment1Record = Comment1Record
         self.CommentRecord: Comment2Record = Comment2Record
+        self.RecordFrom = RecordFrom
 
     def sync_create_tables(self):
         """同步创建表
         
         """
-        AbstractBase.metadata.create_all(self.sync_engine)
+        Base.metadata.create_all(self.sync_engine)
 
     async def async_create_tables(self):
         """异步创建表
         
         """
         async with self.async_engine.begin() as conn:
-            await conn.run_sync(AbstractBase.metadata.create_all)
+            await conn.run_sync(Base.metadata.create_all)
 
 
-    def sync_add_records(self, records: list[ListRecord | BodyRecord | Comment1Record | Comment2Record ]) -> list[int]:
+    def sync_add_records(self, records: list[ BodyRecord | Comment1Record | Comment2Record ]) -> list[int]:
         """同步插入记录
 
         Args:
-            records (list[ListRecord | BodyRecord | Comment1Record | Comment2Record ]): 记录列表
+            records (list[ BodyRecord | Comment1Record | Comment2Record ]): 记录列表
 
         Returns:
             list[int]: id列表
@@ -66,11 +66,11 @@ class DatabaseManager:
                 logging.error(f"插入记录时出现异常: {e}", exc_info=True)
                 return []
 
-    async def async_add_records(self, records: list[ListRecord | BodyRecord | Comment1Record | Comment2Record ]) -> list[int]:
+    async def async_add_records(self, records: list[ BodyRecord | Comment1Record | Comment2Record ]) -> list[int]:
         """异步插入记录
         
         Args:
-            records (list[ListRecord | BodyRecord | Comment1Record | Comment2Record ]): 记录列表
+            records (list[ BodyRecord | Comment1Record | Comment2Record ]): 记录列表
         
         Returns:
             list[int]: id列表
@@ -85,44 +85,44 @@ class DatabaseManager:
                 logging.error(f"插入记录时出现异常: {e}", exc_info=True)
                 return []
 
-    def sync_get_records_by_ids(self, model: ListRecord | BodyRecord | Comment1Record | Comment2Record , ids: list[int]) -> list[ListRecord | BodyRecord | Comment1Record | Comment2Record ]:
+    def sync_get_records_by_ids(self, model:  BodyRecord | Comment1Record | Comment2Record , ids: list[int]) -> list[ BodyRecord | Comment1Record | Comment2Record ]:
         """同步查询记录
         
         Args:
-            model (ListRecord | BodyRecord | Comment1Record | Comment2Record ): 搜索类
+            model ( BodyRecord | Comment1Record | Comment2Record ): 搜索类
             ids (list[int]): 搜索id列表
 
         Returns:
-            list[ListRecord | BodyRecord | Comment1Record | Comment2Record ]: 搜索列表
+            list[ BodyRecord | Comment1Record | Comment2Record ]: 搜索列表
         """
         with self.sync_session() as session:
             return session.query(model).filter(model.id.in_(ids)).all()
 
-    async def async_get_records_by_ids(self, model: ListRecord | BodyRecord | Comment1Record | Comment2Record , ids: list[int]) -> list[ListRecord | BodyRecord | Comment1Record | Comment2Record ]:
+    async def async_get_records_by_ids(self, model:  BodyRecord | Comment1Record | Comment2Record , ids: list[int]) -> list[ BodyRecord | Comment1Record | Comment2Record ]:
         """异步查询记录
         
         Args:
-            model (ListRecord | BodyRecord | Comment1Record | Comment2Record ): 搜索类
+            model ( BodyRecord | Comment1Record | Comment2Record ): 搜索类
             ids (list[int]): 搜索id列表
 
         Returns:
-            list[ListRecord | BodyRecord | Comment1Record | Comment2Record ]: 搜索列表
+            list[ BodyRecord | Comment1Record | Comment2Record ]: 搜索列表
         """
         async with self.async_session() as session:
             stmt = select(model).where(model.id.in_(ids))
             result = await session.execute(stmt)
             return result.scalars().all()
 
-    def sync_update_record(self, model: ListRecord | BodyRecord | Comment1Record | Comment2Record , record_id: int, **kwargs) -> ListRecord | BodyRecord | Comment1Record | Comment2Record :
+    def sync_update_record(self, model:  BodyRecord | Comment1Record | Comment2Record , record_id: int, **kwargs) ->  BodyRecord | Comment1Record | Comment2Record :
         """同步更新记录
         
         Args:
-            model (ListRecord | BodyRecord | Comment1Record | Comment2Record ): 更新类
+            model ( BodyRecord | Comment1Record | Comment2Record ): 更新类
             record_id (int): 更新id
             kwargs: 更新的字段和值
 
         Returns:
-            ListRecord | BodyRecord | Comment1Record | Comment2Record : 更新类
+             BodyRecord | Comment1Record | Comment2Record : 更新类
         """
         with self.sync_session() as session:
             record = session.get(model, record_id)
@@ -136,16 +136,16 @@ class DatabaseManager:
                     logging.error(f"更新记录时出现异常: {e}", exc_info=True)
             return record
 
-    async def async_update_record(self, model: ListRecord | BodyRecord | Comment1Record | Comment2Record , record_id: int, **kwargs) -> ListRecord | BodyRecord | Comment1Record | Comment2Record :
+    async def async_update_record(self, model:  BodyRecord | Comment1Record | Comment2Record , record_id: int, **kwargs) ->  BodyRecord | Comment1Record | Comment2Record :
         """异步更新记录
         
         Args:
-            model (ListRecord | BodyRecord | Comment1Record | Comment2Record ): 更新类
+            model ( BodyRecord | Comment1Record | Comment2Record ): 更新类
             record_id (int): 更新id
             kwargs: 更新的字段和值
 
         Returns:
-            ListRecord | BodyRecord | Comment1Record | Comment2Record : 更新记录
+             BodyRecord | Comment1Record | Comment2Record : 更新记录
         """
         async with self.async_session() as session:
             record = await session.get(model, record_id)
@@ -159,15 +159,15 @@ class DatabaseManager:
                     logging.error(f"更新记录时出现异常: {e}", exc_info=True)
             return record
 
-    def sync_delete_record(self, model: ListRecord | BodyRecord | Comment1Record | Comment2Record , record_id: int) -> ListRecord | BodyRecord | Comment1Record | Comment2Record :
+    def sync_delete_record(self, model:  BodyRecord | Comment1Record | Comment2Record , record_id: int) ->  BodyRecord | Comment1Record | Comment2Record :
         """同步删除记录
         
         Args:
-            model (ListRecord | BodyRecord | Comment1Record | Comment2Record ): 删除类
+            model ( BodyRecord | Comment1Record | Comment2Record ): 删除类
             record_id (int): 删除id
         
         Returns:
-            ListRecord | BodyRecord | Comment1Record | Comment2Record : 删除记录
+             BodyRecord | Comment1Record | Comment2Record : 删除记录
         """
         with self.sync_session() as session:
             record = session.get(model, record_id)
@@ -180,11 +180,11 @@ class DatabaseManager:
                     logging.error(f"删除记录时出现异常: {e}", exc_info=True)
             return record
 
-    async def async_delete_record(self, model: ListRecord | BodyRecord | Comment1Record | Comment2Record , record_id: int) -> ListRecord | BodyRecord | Comment1Record | Comment2Record :
+    async def async_delete_record(self, model:  BodyRecord | Comment1Record | Comment2Record , record_id: int) ->  BodyRecord | Comment1Record | Comment2Record :
         """异步删除记录
         
         Args:
-            model (ListRecord | BodyRecord | Comment1Record | Comment2Record ): 删除类
+            model ( BodyRecord | Comment1Record | Comment2Record ): 删除类
             record_id (int): 删除id
         """
         async with self.async_session() as session:
