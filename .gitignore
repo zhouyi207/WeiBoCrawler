@@ -4,6 +4,7 @@
 
 demo.*
 test.*
+test_*
 
 uv.lock
 pyproject.toml
