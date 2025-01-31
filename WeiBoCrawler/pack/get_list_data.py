@@ -1,10 +1,10 @@
 import httpx
 from datetime import datetime
 from typing import Literal, Optional, Any
-from ..util import database_config, CustomProgress, retry_timeout_decorator, retry_timeout_decorator_asyncio
+from ..util import CustomProgress, retry_timeout_decorator, retry_timeout_decorator_asyncio
 from ..request.get_list_request import get_list_response_asyncio, get_list_response
 from ..parse.parse_list_html import parse_list_html
-from .BaseDownloader import BaseDownloader
+from .BaseDownloader import BaseDownloader, BodyRecord, RecordFrom
 
 
 class Downloader(BaseDownloader):
@@ -46,13 +46,28 @@ class Downloader(BaseDownloader):
         """
         return list(range(1, 51))
 
-    def _get_database_path(self) -> str:
-        """获取数据库路径
+    def _process_items(self, items: list[dict]) -> list[BodyRecord]:
+        """_summary_
+
+        Args:
+            items (list[dict]): _description_
 
         Returns:
-            str: 数据库路径
+            list[BodyRecord]: _description_
         """
-        return database_config.list
+        records = []
+        for item in items:
+            mid = item.get("mid", None)
+            uid = item.get("uid", None)
+            record = BodyRecord(
+                mid=mid,
+                uid=uid,
+                search_for=self.table_name,
+                record_from=RecordFrom.Html,
+                json_data = item
+            )
+            records.append(record)
+        return records
 
     def _process_response(self, response: httpx.Response, *, param: Any) -> None:
         """处理请求并存储数据
@@ -62,7 +77,19 @@ class Downloader(BaseDownloader):
             table_name (str): 存储的位置(数据表名)
         """
         items = parse_list_html(response.text)
-        self._save_to_database(items)
+        records = self._process_items(items)
+        self._save_to_database(records)
+
+    async def _process_response_asyncio(self, response: httpx.Response, *, param: Any) -> None:
+        """处理请求并存储数据
+
+        Args:
+            response (httpx.Response): 需要处理的请求
+            param (Any): 请求参数
+        """
+        items = parse_list_html(response.text)
+        records = self._process_items(items)
+        await self._save_to_database_asyncio(records)
 
     @retry_timeout_decorator_asyncio
     async def _download_single_asyncio(self, *, param:Any, client:httpx.Response, progress:CustomProgress, overall_task:int):
@@ -84,7 +111,7 @@ class Downloader(BaseDownloader):
                             client=client)
                         
         if self._check_response(response):
-            self._process_response(response, param=param)
+            await self._process_response_asyncio(response, param=param)
         
         progress.update(overall_task, advance=1, description=f"{param}...")
 
@@ -131,4 +158,4 @@ def get_list_data(search_for: str, *,  table_name: str, asynchrony: bool = True,
     """
     downloader = Downloader(search_for=search_for, table_name=table_name, kind=kind, advanced_kind=advanced_kind, time_start=time_start, time_end=time_end)
     downloader.download(asynchrony=asynchrony)
-    return downloader.doc_id
+    return downloader.res_ids

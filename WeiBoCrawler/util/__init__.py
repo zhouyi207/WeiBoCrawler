@@ -148,6 +148,39 @@ def drop_table_duplicates(table: Table) -> None:
     table.insert_multiple(unique_document)
 
 
+def process_base_document(document: dict, transform_dict: dict) -> dict:
+    """将 document 处理成字典的形式
+
+    transform_dict = {
+            "转发数量": "retweet_num",
+            "评论数量": "comment_num",
+            "点赞数量": "star_num
+          ...
+        }
+
+    Args:
+        document (dict): 文档
+        transform_dict (dict): 转换字典, key 是转化后的字段, value 是原始字段
+
+    Returns:
+        dict: 处理后的字典
+    """
+    item = {}
+
+    for key, value in transform_dict.items():
+        if isinstance(value, str):
+            final_value = document.get(value, None)
+
+        elif isinstance(value, list):
+            final_value = document
+            for v in value:
+                if final_value is None:
+                    break
+                final_value = final_value.get(v, None)
+
+        item[key] = final_value
+    return item
+
 
 def process_base_documents(documents: list[dict], transform_dict: dict) -> pd.DataFrame:
     """将 documents 处理成 dataframe 的形式
@@ -166,24 +199,7 @@ def process_base_documents(documents: list[dict], transform_dict: dict) -> pd.Da
     Returns:
         pd.DataFrame: (去重)处理后得到的表格
     """
-    items = []
-    for document in documents:
-        item = {}
-
-        for key, value in transform_dict.items():
-            if isinstance(value, str):
-                final_value = document.get(value, None)
-
-            elif isinstance(value, list):
-                final_value = document
-                for v in value:
-                    if final_value is None:
-                        break
-                    final_value = final_value.get(v, None)
-
-            item[key] = final_value
-            
-        items.append(item)
+    items = [process_base_document(document) for document in documents]
     df = pd.DataFrame(items)
     df.drop_duplicates(inplace=True)
     return df

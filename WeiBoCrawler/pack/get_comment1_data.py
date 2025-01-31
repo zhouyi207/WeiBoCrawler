@@ -3,8 +3,7 @@ from ..request.get_comment_request import get_comments_l1_response, get_comments
 from ..parse.process_comment import process_comment_resp
 from typing import List, Union, Any
 from ..util import CustomProgress, retry_timeout_decorator, retry_timeout_decorator_asyncio
-from ..util import database_config
-from .BaseDownloader import BaseDownloader, CommentID
+from .BaseDownloader import BaseDownloader, CommentID, Comment1Record
 
 
 class Downloader(BaseDownloader):
@@ -48,14 +47,32 @@ class Downloader(BaseDownloader):
             list: 请求参数列表
         """
         return self.ids
+    
+    def _process_items(self, items: list[dict]) -> list[Comment1Record]:
+        """_summary_
 
-    def _get_database_path(self) -> str:
-        """获取数据库路径
+        Args:
+            items (list[dict]): _description_
 
         Returns:
-            str: 数据库路径
+            list[BodyRecord]: _description_
         """
-        return database_config.comment1
+        records = []
+        for item in items:
+            f_mid = item.get("f_mid", None)
+            f_uid = item.get("f_uid", None)
+            mid = item.get("mid", None)
+            uid = item.get("uid", None)
+            record = Comment1Record(
+                f_mid = f_mid,
+                f_uid = f_uid,
+                mid=mid,
+                uid=uid,
+                search_for=self.table_name,
+                json_data = item
+            )
+            records.append(record)
+        return records
 
     def _process_response(self, response: httpx.Response, *, param: Any) -> None:
         """处理请求并存储数据
@@ -70,7 +87,25 @@ class Downloader(BaseDownloader):
             item["f_mid"] = param.mid
             item["f_uid"] = param.uid
 
-        self._save_to_database(items)
+        records = self._process_items(items)
+        self._save_to_database(records)
+        return resp_info
+    
+    async def _process_response_asyncio(self, response: httpx.Response, *, param: Any) -> None:
+        """处理请求并存储数据
+
+        Args:
+            response (httpx.Response): 需要处理的请求
+            table_name (str): 存储的位置(数据表名)
+        """
+        resp_info, items = process_comment_resp(response)
+
+        for item in items:
+            item["f_mid"] = param.mid
+            item["f_uid"] = param.uid
+
+        records = self._process_items(items)
+        await self._save_to_database_asyncio(records)
         return resp_info
 
     @retry_timeout_decorator_asyncio
@@ -89,7 +124,7 @@ class Downloader(BaseDownloader):
         """
         response = await get_comments_l1_response_asyncio(uid=param.uid, mid=param.mid, client=client)
         if self._check_response(response):
-            resp_info = self._process_response(response, param=param)
+            resp_info = await self._process_response_asyncio(response, param=param)
             max_id = resp_info.max_id
             total_number = resp_info.total_number
             count_data_number = resp_info.data_number
@@ -100,7 +135,7 @@ class Downloader(BaseDownloader):
             while (failed_times < self.max_failed_times) and (count_data_number < total_number):
                 response = await get_comments_l1_response_asyncio(uid=param.uid, mid=param.mid, client=client, max_id=max_id)
                 if self._check_response(response):
-                    resp_info = self._process_response(response, param=param)
+                    resp_info = await self._process_response_asyncio(response, param=param)
                     max_id = resp_info.max_id
                     count_data_number += resp_info.data_number
                     failed_times = 0 if resp_info.data_number != 0 else failed_times + 1
@@ -171,4 +206,4 @@ def get_comment1_data(uid: Union[List[str], str], mid: Union[List[str], str], *,
     """
     downloader = Downloader(uid=uid, mid=mid, table_name=table_name)
     downloader.download(asynchrony=asynchrony)
-    return downloader.doc_id
+    return downloader.res_ids
