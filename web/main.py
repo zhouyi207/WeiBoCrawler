@@ -13,6 +13,9 @@ st.set_page_config(
 
 
 pg = st.navigation({
+    "Cookie": [
+        st.Page("./web_pages/Cookie/Cookie.py", title="Cookie", icon=":material/add_circle:")
+    ],
     "下载": [
         st.Page("./web_pages/搜索/列表搜索.py", title="列表搜索", icon=":material/add_circle:"),
         st.Page("./web_pages/搜索/详细页搜索.py", title="详细页搜索", icon=":material/add_circle:"),
@@ -21,9 +24,6 @@ pg = st.navigation({
     ],
     "查询": [
         st.Page("./web_pages/查询/查询.py", title="SQL语句查询", icon=":material/add_circle:")
-    ],
-    "测试": [
-        st.Page("./web_pages/test.py", title="测试", icon=":material/add_circle:")
     ],
 })
 

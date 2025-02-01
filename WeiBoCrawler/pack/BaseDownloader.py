@@ -4,9 +4,8 @@ from typing import Any
 
 import httpx
 from pydantic import BaseModel
-import logging
 from ..database import db, BodyRecord, Comment1Record, Comment2Record, RecordFrom
-from ..util import CustomProgress, cookies_config, log_function_params
+from ..util import CustomProgress, cookies_config, log_function_params, logging
 
 
 logger = logging.getLogger(__name__)

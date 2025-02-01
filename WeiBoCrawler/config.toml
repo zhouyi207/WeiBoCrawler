@@ -1,7 +1,6 @@
 [database]
 path = "../数据库.db"
 
-
 [cookies]
 SCF = "AnQhEA08TUG9ln2r7R0-cHMvj3KTSZb-85kfIcXTHqooYhjTcn-UkaGS5792LpSqqbJApBlXrIheowZ1k4aYR1Q."
 SUB = "_2A25Kkj8dDeRhGeFJ4lIT9CzNyj6IHXVp7j7VrDV8PUNbmtAYLVT5kW9NfsmQ4UzJuUOhUQbYBkUvv3HADVVzl9Ig"
@@ -14,7 +13,7 @@ ULV = "1738037552254:3:3:3:6816769468273.411.1738037552250:1737957449024"
 XSRF-TOKEN = "11rI6hKDuc3K5G2ezF4z0hBS"
 PC_TOKEN = "5244ffa483"
 WBPSESS = "2bPq4LTfaY-EnTnt8h5hWX9KGoz50scMNqd4lpDCT8IiCLnpv2C9Z_Kk8JVbYkIyBQ0eFNYccRFpnV_A6ntYby9mRTSp4yVHVscMtbb6neav_FRsiuVo3dDFXhgFIDTEunS8nK_U_4EmshtOSYLo3w=="
-
+update_time = "2025-02-02 02:24:43"
 
 [cookies_info]
-update_time = "2025/02/01 00:00:00"
+update_time = "2025-02-02 02:24:43"

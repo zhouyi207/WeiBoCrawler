@@ -1,13 +1,10 @@
-import logging
 from sqlalchemy import select, inspect, create_engine, text
 from sqlalchemy.orm import sessionmaker
 from sqlalchemy.ext.asyncio import create_async_engine, AsyncSession, async_sessionmaker
 from .sql_record import Base, BodyRecord, Comment1Record, Comment2Record, RecordFrom
+from ..util import logging
 from typing import Any
 
-logging.basicConfig(level=logging.INFO, encoding="utf-8")
-
-logging.info("数据库初始化")
 
 class DatabaseManager:
     """数据库的增删改查

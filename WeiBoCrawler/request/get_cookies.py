@@ -139,7 +139,9 @@ def get_cookies():
     image_path = qrcode_json_data.get("image")
     download_and_open_image(image_path)
 
-    while True:
+
+    count = 0
+    while count <= 25:
         login_check_response = get_login_check_response(client, login_signin_url=login_signin_url, qrid=qrid)
         login_check_response.encoding = "utf-8"
         login_check_json_data = login_check_response.json()
@@ -150,7 +152,9 @@ def get_cookies():
 
         print(f"二维码状态码: {login_check_json_data.get('retcode')}, 状态信息: {login_check_json_data.get('msg')}")
         time.sleep(1)
-
+        count += 1
+    else:
+        return None
 
     # 这里的 response 是一个重定向的响应, 其最终结果状态是 403 但是好像在重定向的过程中会设置一些 cookie 信息
     get_login_final_response(client, login_url=login_url)
