@@ -49,8 +49,12 @@ class RequestParams(BaseModel):
     comment1_rum_headers: dict
     comment2_buildComments_headers: dict
     comment2_rum_headers: dict
+    login_signin_headers:dict
+    login_qrcode_headers:dict
+    login_final_headers:dict
+
     cookies: dict
-    update_time: datetime = Optional[datetime]
+    update_info: dict
 
 
 database_config_path = module_path / "./config.toml"
