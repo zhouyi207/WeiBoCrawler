@@ -1,8 +1,9 @@
 import logging
-from sqlalchemy import select, inspect, create_engine
+from sqlalchemy import select, inspect, create_engine, text
 from sqlalchemy.orm import sessionmaker
 from sqlalchemy.ext.asyncio import create_async_engine, AsyncSession, async_sessionmaker
 from .sql_record import Base, BodyRecord, Comment1Record, Comment2Record, RecordFrom
+from typing import Any
 
 logging.basicConfig(level=logging.INFO, encoding="utf-8")
 
@@ -209,6 +210,64 @@ class DatabaseManager:
         """
         inspector = inspect(self.sync_engine)
         return inspector.get_table_names()
+    
+    def sync_get_records(self, model: BodyRecord | Comment1Record | Comment2Record, limit: int = 100, offset: int = 0) -> list[BodyRecord | Comment1Record | Comment2Record]:
+        """同步获取数据 limit 和 offset
 
+        Args:
+            model (BodyRecord | Comment1Record | Comment2Record): 数据类型
+            limit (int, optional): 数据大小. Defaults to 100.
+            offset (int, optional): 数据偏移. Defaults to 0.
+
+        Returns:
+            list[BodyRecord | Comment1Record | Comment2Record]: 数据列表
+        """
+        with self.sync_session() as session:
+            records = session.query(model).limit(limit).offset(offset).all()
+        return records
+    
+    async def async_get_records(self, model: BodyRecord | Comment1Record | Comment2Record, limit: int = 100, offset: int = 0):
+        """异步获取数据 limit 和 offset
+
+        Args:
+            model (BodyRecord | Comment1Record | Comment2Record): 数据类型
+            limit (int, optional): 数据大小. Defaults to 100.
+            offset (int, optional): 数据偏移. Defaults to 0.
+
+        Returns:
+            list[BodyRecord | Comment1Record | Comment2Record]: 数据列表
+        """
+        async with self.async_session() as session:
+            records = await session.query(model).limit(limit).offset(offset).all()
+        return records
+    
+    # 异步未实现
+    def sync_get_distinct_category_names(self, ModelCol:Any) -> list[str]:
+        """同步获取唯一分类名称
+
+        Args:
+            ModelCol (Any): Model 的 Col 例如 User.name
+
+        Returns:
+            list[str]: 名称列表
+        """
+        with self.sync_session() as session:
+            unique_names = session.query(ModelCol).distinct().all()
+        return unique_names
+    
+    # 在这里直接写 SQL 吧，分类太多了..
+
+    def sql(self, sql_query:str):
+        """在数据库中写sql
+
+        Args:
+            sql (str): sql语句
+
+        return: list
+        """
+        with self.sync_session() as session:
+            result = session.execute(text(sql_query))
+        data_as_dicts_auto = [dict(zip(result.keys(), row)) for row in result]
+        return data_as_dicts_auto
 
 __all__ = [BodyRecord, Comment1Record, Comment2Record, RecordFrom, DatabaseManager]

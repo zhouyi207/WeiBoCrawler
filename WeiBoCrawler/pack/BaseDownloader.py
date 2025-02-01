@@ -4,10 +4,10 @@ from typing import Any
 
 import httpx
 from pydantic import BaseModel
-
+import logging
 from ..database import db, BodyRecord, Comment1Record, Comment2Record, RecordFrom
 from ..util import CustomProgress, request_params
-from ..util import logging, log_function_params
+from ..util import log_function_params
 
 logger = logging.getLogger(__name__)
 
