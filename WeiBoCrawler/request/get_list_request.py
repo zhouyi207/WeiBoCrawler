@@ -77,7 +77,7 @@ def get_list_response(search_for: str, page_index: int, *, client: httpx.Client,
         httpx.Response: 返回列表页响应
     """
     url, headers = build_list_params(search_for, page_index, kind=kind, advanced_kind=advanced_kind, time_start=time_start, time_end=time_end)
-    response = httpx.get(url, headers=headers)
+    response = client.get(url, headers=headers)
     return response
 
 
