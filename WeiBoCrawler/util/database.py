@@ -1,9 +1,9 @@
 import toml
-from .path import module_path, database_config_path, Path
+from .path import module_path, config_path, Path
 from pydantic import BaseModel, field_validator
 
 
-class Database_Config(BaseModel):
+class DatabaseConfig(BaseModel):
     path: str
 
     @field_validator('path')
@@ -14,4 +14,4 @@ class Database_Config(BaseModel):
             return str(module_path / value)
         
 
-database_config = Database_Config.model_validate(toml.load(database_config_path)["database"])
+database_config = DatabaseConfig.model_validate(toml.load(config_path)["database"])
