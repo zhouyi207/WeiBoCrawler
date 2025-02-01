@@ -1,0 +1,18 @@
+[project]
+name = "weibocrawler"
+version = "0.1.0"
+description = "Add your description here"
+readme = "README.md"
+requires-python = ">=3.10"
+dependencies = [
+    "aiosqlite>=0.20.0",
+    "httpx>=0.28.1",
+    "pandas>=2.0.3",
+    "parsel>=1.9.1",
+    "pydantic>=2.10.6",
+    "pyzbar>=0.1.9",
+    "qrcode>=8.0",
+    "sqlalchemy>=2.0.37",
+    "streamlit>=1.41.1",
+    "toml>=0.10.2",
+]

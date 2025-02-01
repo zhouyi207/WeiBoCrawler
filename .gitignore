@@ -6,8 +6,8 @@ demo.*
 test.*
 test_*
 
-uv.lock
-pyproject.toml
-.python-version
+# uv.lock
+# pyproject.toml
+# .python-version
 
 .vscode/
