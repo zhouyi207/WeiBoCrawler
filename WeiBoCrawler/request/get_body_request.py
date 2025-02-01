@@ -1,5 +1,5 @@
 import httpx
-from ..util import request_params
+from .util import request_headers
 
 
 def build_body_params(id: str) -> tuple:
@@ -14,7 +14,7 @@ def build_body_params(id: str) -> tuple:
     Returns:
         tuple: (url, params, headers).
     """
-    headers = request_params.body_headers
+    headers = request_headers.body_headers
     url = "https://weibo.com/ajax/statuses/show"
     params = {
         "id": f"{id}",

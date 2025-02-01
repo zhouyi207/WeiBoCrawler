@@ -1,5 +1,5 @@
 import httpx
-from ..util import request_params
+from .util import request_headers
 from typing import Optional
 
 def build_comments_l1_params(uid: str, mid : str, *, max_id: Optional[str]=None) -> tuple:
@@ -14,7 +14,7 @@ def build_comments_l1_params(uid: str, mid : str, *, max_id: Optional[str]=None)
         tuple: (url, params, headers).
     """
     url = "https://weibo.com/ajax/statuses/buildComments"
-    headers = request_params.comment1_buildComments_headers
+    headers = request_headers.comment1_buildComments_headers
 
     params = {
         "is_reload": "1",
@@ -45,7 +45,7 @@ def build_comments_l2_params(uid: str, mid : str, *, max_id: Optional[str]=None)
         tuple: (url, params, headers).
     """
     url = "https://weibo.com/ajax/statuses/buildComments"
-    headers = request_params.comment2_buildComments_headers
+    headers = request_headers.comment2_buildComments_headers
     
     params = {
         "flow": "0", # 0 表示按热度, 1 表示按时间

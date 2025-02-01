@@ -1,8 +1,8 @@
 import httpx
-from ..util import request_params
 from copy import deepcopy
 from typing import Literal, Optional
 from datetime import datetime
+from .util import request_headers
 
 
 def build_list_params(search_for: str, page_index: int, *,  kind : Literal["综合", "实时", "高级"] = "综合", 
@@ -49,7 +49,7 @@ def build_list_params(search_for: str, page_index: int, *,  kind : Literal["综�
 
         url_with_params["params"]["timescope"] = f"custom:{time_start}-{time_end}"
 
-    headers = request_params.body_headers
+    headers = request_headers.body_headers
 
     if url_with_params["params"]["page"] > 1:
         referer_url_with_params = deepcopy(url_with_params)

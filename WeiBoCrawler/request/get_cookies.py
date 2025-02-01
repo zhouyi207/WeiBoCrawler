@@ -1,5 +1,5 @@
 import httpx
-from ..util import request_params
+from .util import request_headers
 from PIL import Image
 from io import BytesIO
 import time
@@ -15,7 +15,7 @@ def get_login_signin_response(client:httpx.Client) -> httpx.Response:
     Returns:
         httpx.Response: 目的是获取响应的 url
     """
-    headers = request_params.login_signin_headers
+    headers = request_headers.login_signin_headers
 
     url = "https://passport.weibo.com/sso/signin"
     params = {
@@ -41,7 +41,7 @@ def get_login_qrcode_response(client:httpx.Client, login_signin_url:str) -> http
     Returns:
         httpx.Response: 主要是获取 qrid 字段 和 二维码的 url
     """
-    headers = request_params.login_qrcode_headers
+    headers = request_headers.login_qrcode_headers
     headers["referer"] = login_signin_url
     headers["x-csrf-token"] = client.cookies.get("X-CSRF-TOKEN")
 
@@ -66,7 +66,7 @@ def get_login_check_response(client:httpx.Client, login_signin_url:str, qrid:str
     Returns:
         httpx.Response: 检查二维码状态
     """
-    headers = request_params.login_final_headers
+    headers = request_headers.login_final_headers
     headers["referer"] = login_signin_url
     headers["x-csrf-token"] = client.cookies["X-CSRF-TOKEN"]
 
