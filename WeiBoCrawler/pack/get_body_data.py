@@ -1,9 +1,9 @@
 import httpx
 from typing import Any
 from ..util import CustomProgress, retry_timeout_decorator, retry_timeout_decorator_asyncio
-from ..parse.process_body import process_body_resp
+from ..parse import process_body_resp
 from .BaseDownloader import BaseDownloader, BodyRecord, RecordFrom
-from ..request.get_body_request import get_body_response, get_body_response_asyncio
+from ..request import get_body_response, get_body_response_asyncio
 
 
 class Downloader(BaseDownloader):

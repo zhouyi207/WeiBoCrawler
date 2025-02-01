@@ -2,8 +2,8 @@ import httpx
 from datetime import datetime
 from typing import Literal, Optional, Any
 from ..util import CustomProgress, retry_timeout_decorator, retry_timeout_decorator_asyncio
-from ..request.get_list_request import get_list_response_asyncio, get_list_response
-from ..parse.parse_list_html import parse_list_html
+from ..request import get_list_response_asyncio, get_list_response
+from ..parse import parse_list_html
 from .BaseDownloader import BaseDownloader, BodyRecord, RecordFrom
 
 

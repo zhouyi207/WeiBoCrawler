@@ -1,6 +1,6 @@
 import httpx
-from ..request.get_comment_request import get_comments_l2_response, get_comments_l2_response_asyncio
-from ..parse.process_comment import process_comment_resp
+from ..request import get_comments_l2_response, get_comments_l2_response_asyncio
+from ..parse import process_comment_resp
 from typing import List, Union, Any
 from ..util import CustomProgress, retry_timeout_decorator, retry_timeout_decorator_asyncio
 from .BaseDownloader import BaseDownloader, CommentID, Comment2Record

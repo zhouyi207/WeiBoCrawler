@@ -6,8 +6,8 @@ import httpx
 from pydantic import BaseModel
 import logging
 from ..database import db, BodyRecord, Comment1Record, Comment2Record, RecordFrom
-from ..util import CustomProgress, request_params
-from ..util import log_function_params
+from ..util import CustomProgress, cookies_config, log_function_params
+
 
 logger = logging.getLogger(__name__)
 
@@ -124,7 +124,7 @@ class BaseDownloader(ABC):
             overall_task = progress.add_task(
                 description=self._get_request_description(), total=len(self._get_request_params())
             )
-            async with httpx.AsyncClient(cookies=request_params.cookies) as client:
+            async with httpx.AsyncClient(cookies=cookies_config.cookies) as client:
                 tasks = []
                 for param in self._get_request_params():
                     async with self.semaphore:
@@ -147,7 +147,7 @@ class BaseDownloader(ABC):
             overall_task = progress.add_task(
                 description=self._get_request_description(), total=len(self._get_request_params())
             )
-            with httpx.Client(cookies=request_params.cookies) as client:
+            with httpx.Client(cookies=cookies_config.cookies) as client:
                 for params in self._get_request_params():
                     self._download_single_sync(params, client, progress, overall_task)
 
