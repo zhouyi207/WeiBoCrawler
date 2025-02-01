@@ -1,3 +1,0 @@
-from oldcode.get_main_body import get_all_main_body
-from oldcode.get_comments_level_one import get_all_level_one
-from oldcode.get_comments_level_two import get_all_level_two
