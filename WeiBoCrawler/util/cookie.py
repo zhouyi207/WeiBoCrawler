@@ -2,7 +2,6 @@ import toml
 from pydantic import BaseModel
 from .path import config_path
 
-
 class CookiesConfig(BaseModel):
     """这个类主要用来保存 Cookies
 
