@@ -1,17 +1,131 @@
+<style>
+    img {
+        filter: drop - shadow(5px 5px 10px rgba(0, 0, 0, 0.5));
+    }
+</style>
+
+<div style="text-align:center;">
+<img src="./Images/Icon.png" alt="WeiBoCrawler" width=100 height=80 style="margin-top:20px;"></img>
+<h1>WeiBoCrawler</h1>
+</div>
+
+# 欢迎使用本项目做微博数据采集 🤗
+
+### 😁该项目是什么?
+
+该项目主要用于对微博进行数据采集，包括微博详细页内容、微博评论内容、微博转发量、微博点赞量，微博评论量等信息，方便做学术研究时采集数据。
+
+### 😋为什么使用本项目?
+
+- **简单:** 快速上手，只需几行代码即可完成数据采集。
+- **高效:** 采用异步请求和异步存储的方式，大大提高数据采集效率。
+- **可视化:** 利用 streamlit 编写了一个可视化界面，方便用户进行数据采集和数据查询。
+- **数据库:** 将 tinydb 改为 SQL 数据库，可以连接自定义数据库。
+- **Cookies:** 不需要手动输入 cookies，扫码自动获取 cookies。
+
+## 🚤快速上手
+
+### 1. 下载本项目
+
+在指定目录下使用 **git 命令克隆本项目** 或 **下载本项目的 zip 包然后解压**。
+
+```bash
+git clone https://github.com/zhouyi207/WeiBoCrawler.git
+```
+
+### 2. 安装依赖
+
+在项目根目录下使用 **pip 命令安装依赖**，注意这里的 Python 版本是 3.10 版本。
+
+```bash
+pip install -r requirements.txt
+```
+
+### 3. 运行程序
+
+在项目根目录下使用 **streamlit 命令运行程序**。
+
+```bash
+streamlit run web/main.py
+```
 
 
-## 页面介绍 和 ID 介绍
 
-![页面介绍](./Images/页面介绍.png#pic_center)
-![ID介绍](./Images/各种ID.png#pic_center)
+<div style="text-align: center;">
+<img src="./Images/页面展示.png" alt="Streamlit Hello" width=600 style="margin-top:30px;margin-bottom:20px"></img>
+<p style="font-size:15px; font-weight:bold">成功运行🥳🥳🥳</p>
+</div>
 
-## 获取微博主体处理流程
+## 🎨 界面展示
 
-![微博主体处理流程](./Images/微博主体处理流程.png#pic_center)
+### 1. 列表搜索
+
+<div style="text-align: center;">
+<img src="./Images/列表.png" alt="Streamlit Hello" width=600 style="margin-top:30px;margin-bottom:5px"></img>
+<p style="font-size:15px; font-weight:bold">列表搜索</p>
+</div>
 
 
-## 数据流
+### 2. 详细页搜索
 
-![数据流向](./Images/数据流向.png#pic_center)
+<div style="text-align: center;">
+<img src="./Images/详细.png" alt="Streamlit Hello" width=600 style="margin-top:30px;margin-bottom:5px"></img>
+<p style="font-size:15px; font-weight:bold">详细搜索</p>
+</div>
+
+### 3. 一级评论搜索
 
 
+<div style="text-align: center;">
+<img src="./Images/一级.png" alt="Streamlit Hello" width=600 style="margin-top:30px;margin-bottom:5px"></img>
+<p style="font-size:15px; font-weight:bold">一级评论搜索</p>
+</div>
+
+
+### 4. 二级评论搜索
+
+<div style="text-align: center;">
+<img src="./Images/二级.png" alt="Streamlit Hello" width=600 style="margin-top:30px;margin-bottom:5px"></img>
+<p style="font-size:15px; font-weight:bold">二级评论搜索</p>
+</div>
+
+### 5. SQL 数据库查询
+
+<div style="text-align: center;">
+<img src="./Images/SQL.png" alt="Streamlit Hello" width=600 style="margin-top:30px;margin-bottom:5px"></img>
+<p style="font-size:15px; font-weight:bold">SQL 数据库查询</p>
+</div>
+
+## 🧑‍🎓项目相关
+
+### 1. 主体处理
+
+<div style="text-align: center;">
+<img src="./Images/微博主体处理流程.png" alt="Streamlit Hello" width=540 style="margin-top:30px;margin-bottom:20px"></img>
+</div>
+
+### 2. UID 和 MID
+
+<div style="text-align: center;">
+<img src="./Images/各种ID.png" alt="Streamlit Hello" width=600 style="margin-top:30px;margin-bottom:20px"></img>
+</div>
+
+### 3. 数据流向
+
+<div style="text-align: center;">
+<img src="./Images/数据流向.png" alt="Streamlit Hello" width=600 style="margin-top:30px;margin-bottom:20px"></img>
+</div>
+
+
+
+## 📱联系
+
+<div style="text-align: center;">
+<img src="./Images/qrcode.png" alt="Streamlit Hello" width=300 style="margin-top:30px;margin-bottom:20px"></img>
+</div>
+
+
+
+## ⚠️⚠️⚠️ 注意事项
+
+本项目仅用于学术研究，**请勿用于商业用途**。

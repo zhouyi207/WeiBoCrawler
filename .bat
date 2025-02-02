@@ -1,3 +1,3 @@
 @echo off
-.venv\Scripts\python.exe demo.py
+.venv\Scripts\streamlit.exe run web/main.py
 pause

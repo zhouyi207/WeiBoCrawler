@@ -11,7 +11,7 @@ def set_cookies():
         cookies_config.cookies_info["update_time"] = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
         config_data = toml.load(config_path)
 
-        config_data["cookies"].update(cookies_config.cookies_info)
+        config_data["cookies"].update(cookies_config.cookies)
         config_data["cookies_info"].update(cookies_config.cookies_info)
 
         with open(config_path, "w", encoding="utf-8") as f:

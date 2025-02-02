@@ -25,6 +25,9 @@ class DatabaseManager:
         self.sync_session = sessionmaker(self.sync_engine, expire_on_commit=False)
         self.async_session = async_sessionmaker(self.async_engine, class_=AsyncSession, expire_on_commit=False)
 
+        # 创建表
+        self.sync_create_tables()
+
     def sync_create_tables(self):
         """同步创建表
         
