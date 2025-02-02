@@ -1,10 +1,4 @@
-<style>
-    img {
-        filter: drop - shadow(5px 5px 10px rgba(0, 0, 0, 0.5));
-    }
-</style>
-
-<div style="text-align:center;">
+<div align=center>
 <img src="./Images/Icon.png" alt="WeiBoCrawler" width=100 height=80 style="margin-top:20px;"></img>
 <h1>WeiBoCrawler</h1>
 </div>
@@ -51,7 +45,7 @@ streamlit run web/main.py
 
 
 
-<div style="text-align: center;">
+<div align=center>
 <img src="./Images/页面展示.png" alt="Streamlit Hello" width=600 style="margin-top:30px;margin-bottom:20px"></img>
 <p style="font-size:15px; font-weight:bold">成功运行🥳🥳🥳</p>
 </div>
@@ -60,7 +54,7 @@ streamlit run web/main.py
 
 ### 1. 列表搜索
 
-<div style="text-align: center;">
+<div align=center>
 <img src="./Images/列表.png" alt="Streamlit Hello" width=600 style="margin-top:30px;margin-bottom:5px"></img>
 <p style="font-size:15px; font-weight:bold">列表搜索</p>
 </div>
@@ -68,7 +62,7 @@ streamlit run web/main.py
 
 ### 2. 详细页搜索
 
-<div style="text-align: center;">
+<div align=center>
 <img src="./Images/详细.png" alt="Streamlit Hello" width=600 style="margin-top:30px;margin-bottom:5px"></img>
 <p style="font-size:15px; font-weight:bold">详细搜索</p>
 </div>
@@ -76,7 +70,7 @@ streamlit run web/main.py
 ### 3. 一级评论搜索
 
 
-<div style="text-align: center;">
+<div align=center>
 <img src="./Images/一级.png" alt="Streamlit Hello" width=600 style="margin-top:30px;margin-bottom:5px"></img>
 <p style="font-size:15px; font-weight:bold">一级评论搜索</p>
 </div>
@@ -84,14 +78,14 @@ streamlit run web/main.py
 
 ### 4. 二级评论搜索
 
-<div style="text-align: center;">
+<div align=center>
 <img src="./Images/二级.png" alt="Streamlit Hello" width=600 style="margin-top:30px;margin-bottom:5px"></img>
 <p style="font-size:15px; font-weight:bold">二级评论搜索</p>
 </div>
 
 ### 5. SQL 数据库查询
 
-<div style="text-align: center;">
+<div align=center>
 <img src="./Images/SQL.png" alt="Streamlit Hello" width=600 style="margin-top:30px;margin-bottom:5px"></img>
 <p style="font-size:15px; font-weight:bold">SQL 数据库查询</p>
 </div>
@@ -100,19 +94,19 @@ streamlit run web/main.py
 
 ### 1. 主体处理
 
-<div style="text-align: center;">
+<div align=center>
 <img src="./Images/微博主体处理流程.png" alt="Streamlit Hello" width=540 style="margin-top:30px;margin-bottom:20px"></img>
 </div>
 
 ### 2. UID 和 MID
 
-<div style="text-align: center;">
+<div align=center>
 <img src="./Images/各种ID.png" alt="Streamlit Hello" width=600 style="margin-top:30px;margin-bottom:20px"></img>
 </div>
 
 ### 3. 数据流向
 
-<div style="text-align: center;">
+<div align=center>
 <img src="./Images/数据流向.png" alt="Streamlit Hello" width=600 style="margin-top:30px;margin-bottom:20px"></img>
 </div>
 
@@ -120,7 +114,7 @@ streamlit run web/main.py
 
 ## 📱联系
 
-<div style="text-align: center;">
+<div align=center>
 <img src="./Images/qrcode.png" alt="Streamlit Hello" width=300 style="margin-top:30px;margin-bottom:20px"></img>
 </div>
 
