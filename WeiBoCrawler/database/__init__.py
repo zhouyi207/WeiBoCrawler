@@ -9,4 +9,4 @@ db = DatabaseManager(
         async_db_url=f'sqlite+aiosqlite:///{db_path}'  # 异步模式
 )
 
-__all__ = [db, BodyRecord, Comment1Record, Comment2Record, RecordFrom]
+__all__ = ["db", "BodyRecord", "Comment1Record", "Comment2Record", "RecordFrom"]
