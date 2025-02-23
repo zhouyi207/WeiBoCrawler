@@ -13,5 +13,4 @@ test_*
 .vscode/
 app.log
 
-config.toml
 数据库.db
