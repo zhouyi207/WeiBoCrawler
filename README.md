@@ -3,7 +3,11 @@
 <h1>WeiBoCrawler</h1>
 </div>
 
-# 欢迎使用本项目做微博数据采集 🤗
+# 欢迎使用本项目做微博数据采集，如果好用点个 star 🌟 呗！🤗
+
+😉😉😉 **本项目打算长期维护，欢迎大家 Pull requests 成为 Contributor** 😉😉😉
+
+😘😘😘 **如果发现 bug, 可以通过提 [Issues](https://github.com/zhouyi207/WeiBoCrawler/issues) 或添加微信: woyaolz 沟通 ！** 😘😘😘
 
 ### 😁该项目是什么?
 
@@ -17,7 +21,7 @@
 - **数据库:** 将 tinydb 改为 SQL 数据库，可以连接自定义数据库。
 - **Cookies:** 不需要手动输入 cookies，扫码自动获取 cookies。
 
-## 🥂更新修复
+### 🥂更新修复
 
 - 2025.02.23 添加一个错误报错提示，先获取 cookie 才能生成 config.toml 文件，否则会报错。
 
