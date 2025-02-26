@@ -3,7 +3,7 @@
 <h1>WeiBoCrawler</h1>
 </div>
 
-# 欢迎使用本项目做微博数据采集，如果好用点个 star 🌟 呗！🤗
+# 欢迎！如果好用点个 star 🌟 呗！🤗
 
 😉😉😉 **本项目打算长期维护，欢迎大家 Pull requests 成为 Contributor** 😉😉😉
 
