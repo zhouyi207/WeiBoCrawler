@@ -38,5 +38,3 @@ def scan_code():
 
 st.button("更新", key="update", on_click=scan_code, type="primary")
 st.write(cookies_config)
-
-st.write(st.session_state)
