@@ -102,44 +102,41 @@ def get_login_final_response(client:httpx.Client, login_url:str) -> httpx.Respon
     return response
 
 
-def download_and_open_image(url:str):
+def download_image(url:str, show:bool=False):
     """下载并打开图片用来扫描
 
     Args:
         url (str): 二维码图片地址
+        show (bool, optional): 是否显示图片. Defaults to False.
     """
     try:
         response = httpx.get(url)
         response.raise_for_status()
         image_content = BytesIO(response.content)
         image = Image.open(image_content)
-        image.show()
+
+        if show:
+            image.show()
+
+        return image
+    
     except httpx.RequestError as e:
         print(f"请求发生错误: {e}")
     except Exception as e:
         print(f"发生其他错误: {e}")
     
 
+def get_qr_status(client:httpx.Client, login_signin_url:str, qrid:str) -> dict | None:
+    """获取二维码的状态
 
-def get_cookies():
-    """最终获取 cookies 的函数
+    Args:
+        client (httpx.Client): 会话客户端
+        login_signin_url (str): 登入验证 url
+        qrid (str): qr 的 id
 
     Returns:
-        dict: 获取的 cookies
+        dict | None: 返回 cookies 或者 None
     """
-    client = httpx.Client(follow_redirects=True)
-
-    login_signin_response = get_login_signin_response(client)
-    login_signin_url = str(login_signin_response.url)
-
-    login_qrcode_response = get_login_qrcode_response(client, login_signin_url=login_signin_url)
-    qrcode_json_data = login_qrcode_response.json().get("data")
-
-    qrid = qrcode_json_data.get("qrid")
-    image_path = qrcode_json_data.get("image")
-    download_and_open_image(image_path)
-
-
     count = 0
     while count <= 25:
         login_check_response = get_login_check_response(client, login_signin_url=login_signin_url, qrid=qrid)
@@ -155,8 +152,27 @@ def get_cookies():
         count += 1
     else:
         return None
-
+    
     # 这里的 response 是一个重定向的响应, 其最终结果状态是 403 但是好像在重定向的过程中会设置一些 cookie 信息
     get_login_final_response(client, login_url=login_url)
-    
     return dict(client.cookies)
+    
+
+def get_qr_Info() -> list[Image.Image, httpx.Client, str, str]:
+    """最终获取 cookies 的函数
+
+    Returns:
+        list[Image.Image, httpx.Client, str, str]: 返回图片，会话客户端，登入验证 url，qr 的 id
+    """
+    client = httpx.Client(follow_redirects=True)
+
+    login_signin_response = get_login_signin_response(client)
+    login_signin_url = str(login_signin_response.url)
+
+    login_qrcode_response = get_login_qrcode_response(client, login_signin_url=login_signin_url)
+    qrcode_json_data = login_qrcode_response.json().get("data")
+
+    qrid = qrcode_json_data.get("qrid")
+    image_path = qrcode_json_data.get("image")
+    image = download_image(image_path)
+    return image, client, login_signin_url, qrid
