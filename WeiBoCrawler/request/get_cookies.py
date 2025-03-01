@@ -3,8 +3,10 @@ from .util import request_headers
 from PIL import Image
 from io import BytesIO
 import time
+from ..util import logging
 
 
+logger = logging.getLogger(__name__)
 
 def get_login_signin_response(client:httpx.Client) -> httpx.Response:
     """主要是获取 cookies 中的 X-CSRF-TOKEN 字段
@@ -137,25 +139,25 @@ def get_qr_status(client:httpx.Client, login_signin_url:str, qrid:str) -> dict |
     Returns:
         dict | None: 返回 cookies 或者 None
     """
-    count = 0
-    while count <= 25:
+    while True:
         login_check_response = get_login_check_response(client, login_signin_url=login_signin_url, qrid=qrid)
         login_check_response.encoding = "utf-8"
         login_check_json_data = login_check_response.json()
 
-        if login_check_json_data.get("retcode") == 20000000:
-            login_url = login_check_json_data.get("data").get("url")
-            break
+        retcode = login_check_json_data.get("retcode")
+        if retcode in [20000000, 50114001, 50114002]:
+            if login_check_json_data.get("retcode") == 20000000:
+                login_url = login_check_json_data.get("data").get("url")
+                # 这里的 response 是一个重定向的响应, 其最终结果状态是 403 但是好像在重定向的过程中会设置一些 cookie 信息
+                get_login_final_response(client, login_url=login_url)
+                return dict(client.cookies)
+            else:
+                logging.info(f"二维码状态码: {login_check_json_data.get('retcode')}, 状态信息: {login_check_json_data.get('msg')}")
+        else:
+            return None
 
-        print(f"二维码状态码: {login_check_json_data.get('retcode')}, 状态信息: {login_check_json_data.get('msg')}")
         time.sleep(1)
-        count += 1
-    else:
-        return None
     
-    # 这里的 response 是一个重定向的响应, 其最终结果状态是 403 但是好像在重定向的过程中会设置一些 cookie 信息
-    get_login_final_response(client, login_url=login_url)
-    return dict(client.cookies)
     
 
 def get_qr_Info() -> list[Image.Image, httpx.Client, str, str]:

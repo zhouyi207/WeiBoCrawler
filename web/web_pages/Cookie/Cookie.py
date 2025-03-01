@@ -2,6 +2,8 @@ import streamlit as st
 import toml
 from util import cookies_config, config_path, get_qr_Info, get_qr_status
 from datetime import datetime
+from threading import Thread
+from streamlit.runtime.scriptrunner import add_script_run_ctx, get_script_run_ctx
 
 
 def set_cookies(cookies):
@@ -19,7 +21,6 @@ def set_cookies(cookies):
         st.error("获取 cookies 失败!!!!!!!")
 
 
-@st.fragment
 def get_cookies(client, login_signin_url, qrid):
     cookies = get_qr_status(client, login_signin_url, qrid)
     if cookies is None:
@@ -33,7 +34,9 @@ def get_cookies(client, login_signin_url, qrid):
 def scan_code():
     image, client, login_signin_url, qrid = get_qr_Info()
     st.image(image=image)
-    get_cookies(client, login_signin_url, qrid)
+    thread = Thread(target=get_cookies, args=(client, login_signin_url, qrid))
+    add_script_run_ctx(thread, get_script_run_ctx())
+    thread.start()
 
 
 st.button("更新", key="update", on_click=scan_code, type="primary")
