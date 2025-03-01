@@ -5,6 +5,8 @@ from datetime import datetime
 from threading import Thread
 from streamlit.runtime.scriptrunner import add_script_run_ctx, get_script_run_ctx
 
+if 'Thread' not in st.session_state:
+    st.session_state["Thread"] = None
 
 def set_cookies(cookies):
     if cookies is not None:
@@ -32,12 +34,19 @@ def get_cookies(client, login_signin_url, qrid):
 
 @st.dialog("使用微博APP扫码登录")
 def scan_code():
-    image, client, login_signin_url, qrid = get_qr_Info()
-    st.image(image=image)
-    thread = Thread(target=get_cookies, args=(client, login_signin_url, qrid))
-    add_script_run_ctx(thread, get_script_run_ctx())
-    thread.start()
+    if st.session_state["Thread"] is not None and st.session_state["Thread"].is_alive():
+        st.image(image=st.session_state["image"])
+    else:
+        image, client, login_signin_url, qrid = get_qr_Info()
+        st.session_state["image"] = image
+        st.image(image=image)
 
+        st.session_state["Thread"] = Thread(target=get_cookies, args=(client, login_signin_url, qrid))
+        add_script_run_ctx(st.session_state["Thread"], get_script_run_ctx())
+        st.session_state["Thread"].start()
 
-st.button("更新", key="update", on_click=scan_code, type="primary")
+cols = st.columns([1, 1, 15])
+cols[0].button("更新", key="update", on_click=scan_code, type="secondary", use_container_width=True)
+if cols[1].button("刷新", key="rerun", type="secondary", use_container_width=True):
+    st.rerun()
 st.write(cookies_config)
