@@ -217,24 +217,27 @@ def parse_list_html(html: str) -> List[dict]:
         List[dict]: 整理后的 List[dict]
     """
     select = parsel.Selector(html)
-    div_list = select.xpath('//*[@id="pl_feedlist_index"]//div[@action-type="feed_list_item"]').getall()
-    lst = []
-    for div_string in div_list:
-        select = parsel.Selector(div_string)
-        item = {
-            "mid": get_mid(select),
-            "uid": get_uid(select),
-            "mblogid": get_mblogid(select),
-            "personal_name": get_personal_name(select),
-            "personal_href": get_personal_href(select),
-            "weibo_href": get_weibo_href(select),
-            "publish_time": get_publish_time(select),
-            "content_from": get_content_from(select),
-            "content_all": get_content_all(select),
-            "retweet_num": get_retweet_num(select),
-            "comment_num": get_comment_num(select),
-            "star_num": get_star_num(select),
-        }
-        lst.append(item)
-
-    return lst
+    check_div_mpage = select.css("div.m-page").get()
+    if check_div_mpage is None:
+        return []
+    else:
+        div_list = select.xpath('//*[@id="pl_feedlist_index"]//div[@action-type="feed_list_item"]').getall()
+        lst = []
+        for div_string in div_list:
+            select = parsel.Selector(div_string)
+            item = {
+                "mid": get_mid(select),
+                "uid": get_uid(select),
+                "mblogid": get_mblogid(select),
+                "personal_name": get_personal_name(select),
+                "personal_href": get_personal_href(select),
+                "weibo_href": get_weibo_href(select),
+                "publish_time": get_publish_time(select),
+                "content_from": get_content_from(select),
+                "content_all": get_content_all(select),
+                "retweet_num": get_retweet_num(select),
+                "comment_num": get_comment_num(select),
+                "star_num": get_star_num(select),
+            }
+            lst.append(item)
+        return lst

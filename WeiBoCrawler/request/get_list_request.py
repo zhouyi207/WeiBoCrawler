@@ -47,7 +47,7 @@ def build_list_params(search_for: str, page_index: int, *,  kind : Literal["ç»¼å
         time_start = time_start.strftime("%Y-%m-%d-%H") if time_start else ""
         time_end = time_end.strftime("%Y-%m-%d-%H") if time_end else ""
 
-        url_with_params["params"]["timescope"] = f"custom:{time_start}-{time_end}"
+        url_with_params["params"]["timescope"] = f"custom:{time_start}:{time_end}"
 
     headers = request_headers.body_headers
 
