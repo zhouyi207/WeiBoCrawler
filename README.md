@@ -3,9 +3,9 @@
 <h1>WeiBoCrawler</h1>
 </div>
 
-# 欢迎！如果好用点个 star 🌟 呗！🤗 
+# 积累到 111 个赞使用 tauri 重构！！！🤗 
 
-😉😉😉 **积累到 111 个赞使用 tauri 重构！！** 😉😉😉
+😉😉😉 **欢迎！如果好用点个 star 🌟 呗** 😉😉😉
 
 😉😉😉 **本项目打算长期维护，欢迎大家 Pull requests 成为 Contributor** 😉😉😉
 
