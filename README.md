@@ -3,11 +3,11 @@
 <h1>WeiBoCrawler(新重构)</h1>
 </div>
 
-😉😉😉 **欢迎！如果好用点个 star 🌟 呗** 😉😉😉
+😉😉😉 **欢迎！如果好用点个 star 🌟 呗！后面会更新知乎，贴吧，小红书，抖音，快手等平台** 😉😉😉
 
 😉😉😉 **本项目打算长期维护，欢迎大家 Pull requests 成为 Contributor** 😉😉😉
 
-😘😘😘 **如果发现 bug, 可以通过提 [Issues](https://github.com/zhouyi207/WeiBoCrawler/issues) 或添加微信: woyaolz 沟通 ！** 😘😘😘
+😘😘😘 **如果发现 bug, 可以通过提 [Issues](https://github.com/zhouyi207/WeiBoCrawler/issues) 或添加微信: woyaolz 沟通！** 😘😘😘
 
 ### 😁该项目是什么?
 
