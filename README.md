@@ -38,7 +38,7 @@
 
 <div align=center>
 <img src="./imgs/主页.png"  width=600 style="margin-top:30px;margin-bottom:5px"></img>
-<p style="font-size:15px; font-weight:bold">列表搜索</p>
+<p style="font-size:15px; font-weight:bold">主页</p>
 </div>
 
 
@@ -46,7 +46,7 @@
 
 <div align=center>
 <img src="./imgs/采集页面.png"  width=600 style="margin-top:30px;margin-bottom:5px"></img>
-<p style="font-size:15px; font-weight:bold">详细搜索</p>
+<p style="font-size:15px; font-weight:bold">采集页面</p>
 </div>
 
 ### 3. 账号页面
@@ -54,7 +54,7 @@
 
 <div align=center>
 <img src="./imgs/账号页面.png"  width=600 style="margin-top:30px;margin-bottom:5px"></img>
-<p style="font-size:15px; font-weight:bold">一级评论搜索</p>
+<p style="font-size:15px; font-weight:bold">账号页面</p>
 </div>
 
 
@@ -62,14 +62,14 @@
 
 <div align=center>
 <img src="./imgs/IP代理页面.png"  width=600 style="margin-top:30px;margin-bottom:5px"></img>
-<p style="font-size:15px; font-weight:bold">二级评论搜索</p>
+<p style="font-size:15px; font-weight:bold">IP代理页面.png</p>
 </div>
 
 ### 5. 数据库页面
 
 <div align=center>
 <img src="./imgs/数据库页面.png"  width=600 style="margin-top:30px;margin-bottom:5px"></img>
-<p style="font-size:15px; font-weight:bold">SQL 数据库查询</p>
+<p style="font-size:15px; font-weight:bold">数据库页面</p>
 </div>
 
 
