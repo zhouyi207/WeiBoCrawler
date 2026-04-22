@@ -62,7 +62,7 @@
 
 <div align=center>
 <img src="./imgs/IP代理页面.png"  width=600 style="margin-top:30px;margin-bottom:5px"></img>
-<p style="font-size:15px; font-weight:bold">IP代理页面.png</p>
+<p style="font-size:15px; font-weight:bold">IP代理页面</p>
 </div>
 
 ### 5. 数据库页面
