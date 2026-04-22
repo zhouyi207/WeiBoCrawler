@@ -64,9 +64,7 @@ export function GlobalIpTable({
           <TableHead className="text-right">响应延迟(国内)</TableHead>
           <TableHead className="text-right">响应延迟(国外)</TableHead>
           <TableHead className="hidden min-w-[120px] xl:table-cell">IP 备注</TableHead>
-          <TableHead className="w-[44px] text-center">
-            <span className="sr-only">操作</span>
-          </TableHead>
+          <TableHead className="w-[72px] text-center">操作</TableHead>
         </TableRow>
       </TableHeader>
       <TableBody>

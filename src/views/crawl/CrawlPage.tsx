@@ -12,6 +12,7 @@ import {
   RotateCwIcon,
   RefreshCwIcon,
   Settings2Icon,
+  EraserIcon,
 } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -130,6 +131,11 @@ export function CrawlPage() {
     () =>
       [...tasks].sort((a, b) => b.createdAt.localeCompare(a.createdAt)),
     [tasks]
+  );
+
+  const hasAnyTaskLogs = useMemo(
+    () => Object.values(taskLogs).some((lines) => lines.length > 0),
+    [taskLogs]
   );
 
   useEffect(() => {
@@ -327,6 +333,42 @@ export function CrawlPage() {
     setCreateOpen(true);
   }
 
+  function clearLogsForTask(taskId: string) {
+    setTaskLogs((prev) => {
+      if (!(taskId in prev)) return prev;
+      const next = { ...prev };
+      delete next[taskId];
+      return next;
+    });
+  }
+
+  function clearLogsForPlatformTab(platform: Platform) {
+    const ids = sortedTasks
+      .filter((t) => t.platform === platform)
+      .map((t) => t.id);
+    if (ids.length === 0) return;
+    setTaskLogs((prev) => {
+      const next = { ...prev };
+      for (const id of ids) delete next[id];
+      return next;
+    });
+    toast.success("已清空当前平台任务的本地日志");
+  }
+
+  function confirmClearAllTaskLogs() {
+    setConfirmState({
+      title: "清空全部任务日志",
+      description:
+        "将删除所有任务在本地持久保存的采集进度日志，且不可恢复。确定继续？",
+      confirmLabel: "清空",
+      destructive: true,
+      onConfirm: () => {
+        setTaskLogs({});
+        toast.success("已清空全部任务日志");
+      },
+    });
+  }
+
   return (
     <div className="relative flex min-h-0 flex-1 flex-col">
       <FloatingScrollArea>
@@ -341,6 +383,16 @@ export function CrawlPage() {
                 </p>
               </div>
               <div className="flex shrink-0 flex-wrap items-center justify-end gap-2">
+                <Button
+                  type="button"
+                  variant="outline"
+                  disabled={!hasAnyTaskLogs}
+                  onClick={() => confirmClearAllTaskLogs()}
+                  title="清空所有任务在本地保存的采集日志"
+                >
+                  <EraserIcon className="size-4" />
+                  清空全部日志
+                </Button>
                 <Button
                   type="button"
                   variant="outline"
@@ -382,6 +434,9 @@ export function CrawlPage() {
 
             {PLATFORMS.map((p) => {
               const platformTasks = sortedTasks.filter((t) => t.platform === p);
+              const hasLogsOnThisTab = platformTasks.some(
+                (t) => (taskLogs[t.id] ?? []).length > 0
+              );
               return (
                 <TabsContent key={p} value={p}>
                   <Card>
@@ -389,14 +444,27 @@ export function CrawlPage() {
                       <CardTitle className="text-base">
                         {PLATFORM_LABELS[p]} 采集任务
                       </CardTitle>
-                      <Button
-                        type="button"
-                        className="shrink-0"
-                        onClick={() => openCreate(p)}
-                      >
-                        <PlusIcon className="size-4" />
-                        新建采集任务
-                      </Button>
+                      <div className="flex shrink-0 flex-wrap items-center justify-end gap-2">
+                        <Button
+                          type="button"
+                          variant="outline"
+                          className="shrink-0"
+                          disabled={!hasLogsOnThisTab}
+                          onClick={() => clearLogsForPlatformTab(p)}
+                          title="清空当前平台下所有任务的本地采集日志"
+                        >
+                          <EraserIcon className="size-4" />
+                          清空本页日志
+                        </Button>
+                        <Button
+                          type="button"
+                          className="shrink-0"
+                          onClick={() => openCreate(p)}
+                        >
+                          <PlusIcon className="size-4" />
+                          新建采集任务
+                        </Button>
+                      </div>
                     </CardHeader>
                     <CardContent className="p-0">
                       <Table className="table-fixed">
@@ -581,73 +649,122 @@ export function CrawlPage() {
                                         <div className="min-w-0 space-y-2">
                                           {(() => {
                                             const prog = progressMap[task.id];
-                                            if (!prog || prog.total === 0) return null;
+                                            const showRestartRetry =
+                                              !!prog &&
+                                              prog.total > 0 &&
+                                              prog.failed > 0 &&
+                                              task.status !== "running";
+                                            const hasProgress =
+                                              !!prog && prog.total > 0;
+
+                                            const actionButtons = (
+                                              <>
+                                                <Button
+                                                  variant="outline"
+                                                  size="sm"
+                                                  className="h-6 gap-1 px-2 text-xs"
+                                                  disabled={
+                                                    busyId === task.id ||
+                                                    logs.length === 0
+                                                  }
+                                                  onClick={(e) => {
+                                                    e.stopPropagation();
+                                                    clearLogsForTask(task.id);
+                                                    toast.message(
+                                                      "已清空该任务的本地日志",
+                                                    );
+                                                  }}
+                                                >
+                                                  <EraserIcon className="size-3" />
+                                                  清空日志
+                                                </Button>
+                                                {showRestartRetry && (
+                                                  <>
+                                                    <Button
+                                                      variant="outline"
+                                                      size="sm"
+                                                      className="h-6 gap-1 px-2 text-xs"
+                                                      disabled={
+                                                        busyId === task.id
+                                                      }
+                                                      onClick={(e) => {
+                                                        e.stopPropagation();
+                                                        void handleRestart(task);
+                                                      }}
+                                                    >
+                                                      <RotateCwIcon className="size-3" />
+                                                      重新采集
+                                                    </Button>
+                                                    <Button
+                                                      variant="outline"
+                                                      size="sm"
+                                                      className="h-6 gap-1 px-2 text-xs"
+                                                      disabled={
+                                                        busyId === task.id
+                                                      }
+                                                      onClick={(e) => {
+                                                        e.stopPropagation();
+                                                        void handleRetryFailed(
+                                                          task,
+                                                        );
+                                                      }}
+                                                    >
+                                                      <RefreshCwIcon className="size-3" />
+                                                      重试失败请求
+                                                    </Button>
+                                                  </>
+                                                )}
+                                              </>
+                                            );
+
+                                            if (!hasProgress) {
+                                              return (
+                                                <div className="flex flex-wrap items-center justify-end gap-2">
+                                                  {actionButtons}
+                                                </div>
+                                              );
+                                            }
+
                                             const pct = Math.round(
                                               (prog.done / prog.total) * 100,
                                             );
                                             return (
                                               <div className="space-y-1">
-                                                <div className="flex items-center gap-2 text-xs text-muted-foreground">
-                                                  <span>
-                                                    进度 {prog.done}/{prog.total} ({pct}%)
-                                                  </span>
-                                                  {prog.failed > 0 && (
-                                                    <span className="font-medium text-destructive">
-                                                      失败 {prog.failed}
+                                                <div className="flex flex-wrap items-center justify-between gap-x-3 gap-y-2">
+                                                  <div className="flex min-w-0 flex-1 flex-wrap items-center gap-x-2 gap-y-1 text-xs text-muted-foreground">
+                                                    <span>
+                                                      进度 {prog.done}/
+                                                      {prog.total} ({pct}%)
                                                     </span>
-                                                  )}
-                                                  {prog.running > 0 && (
-                                                    <span className="text-primary">
-                                                      执行中 {prog.running}
-                                                    </span>
-                                                  )}
-                                                  {prog.pending > 0 && (
-                                                    <span>等待 {prog.pending}</span>
-                                                  )}
-                                                  {prog.failed > 0 &&
-                                                    task.status !== "running" && (
-                                                      <div className="ml-auto flex items-center gap-2">
-                                                        <Button
-                                                          variant="outline"
-                                                          size="sm"
-                                                          className="h-6 gap-1 px-2 text-xs"
-                                                          disabled={busyId === task.id}
-                                                          onClick={(e) => {
-                                                            e.stopPropagation();
-                                                            void handleRestart(task);
-                                                          }}
-                                                        >
-                                                          <RotateCwIcon className="size-3" />
-                                                          重新采集
-                                                        </Button>
-                                                        <Button
-                                                          variant="outline"
-                                                          size="sm"
-                                                          className="h-6 gap-1 px-2 text-xs"
-                                                          disabled={busyId === task.id}
-                                                          onClick={(e) => {
-                                                            e.stopPropagation();
-                                                            void handleRetryFailed(task);
-                                                          }}
-                                                        >
-                                                          <RefreshCwIcon className="size-3" />
-                                                          重试失败请求
-                                                        </Button>
-                                                      </div>
+                                                    {prog.failed > 0 && (
+                                                      <span className="font-medium text-destructive">
+                                                        失败 {prog.failed}
+                                                      </span>
                                                     )}
+                                                    {prog.running > 0 && (
+                                                      <span className="text-primary">
+                                                        执行中 {prog.running}
+                                                      </span>
+                                                    )}
+                                                    {prog.pending > 0 && (
+                                                      <span>等待 {prog.pending}</span>
+                                                    )}
+                                                  </div>
+                                                  <div className="flex shrink-0 flex-wrap items-center justify-end gap-2">
+                                                    {actionButtons}
+                                                  </div>
                                                 </div>
                                                 <div className="h-1.5 w-full overflow-hidden rounded-full bg-muted">
                                                   <div
                                                     className="h-full rounded-full bg-primary transition-all"
-                                                    style={{ width: `${pct}%` }}
+                                                    style={{
+                                                      width: `${pct}%`,
+                                                    }}
                                                   />
                                                 </div>
                                               </div>
                                             );
                                           })()}
-                                          <p className="text-xs font-medium text-muted-foreground">
-                                            任务日志（crawl-progress，本地持久化）
-                                          </p>
                                           {logs.length === 0 ? (
                                             <p className="text-xs text-muted-foreground">
                                               暂无日志。启动任务后将在此显示每条采集进度与入库结果。

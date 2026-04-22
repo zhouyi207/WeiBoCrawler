@@ -7,6 +7,7 @@ export const PAGE_PATH: Record<PageId, string> = {
   account: "/account",
   ip: "/ip",
   database: "/database",
+  requestLogs: "/request-logs",
 };
 
 export const PAGE_TITLE: Record<PageId, string> = {
@@ -15,6 +16,7 @@ export const PAGE_TITLE: Record<PageId, string> = {
   account: "账号",
   ip: "IP 代理",
   database: "数据库",
+  requestLogs: "请求日志",
 };
 
 /** 从 `location.pathname` 解析当前页（用于顶栏标题等） */
@@ -26,8 +28,10 @@ export function getPageIdFromPathname(pathname: string): PageId {
     seg === "crawl" ||
     seg === "account" ||
     seg === "ip" ||
-    seg === "database"
+    seg === "database" ||
+    seg === "request-logs"
   ) {
+    if (seg === "request-logs") return "requestLogs";
     return seg;
   }
   return "home";

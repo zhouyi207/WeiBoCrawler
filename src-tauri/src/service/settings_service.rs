@@ -1,4 +1,5 @@
 //! 应用全局配置服务。当前承载：
+//! - 界面主题（`ui.theme`：`light` / `dark`）；
 //! - IP 代理双探针目标 URL；
 //! - 采集 Worker 熔断退避时长（按任务平台）。
 //!
@@ -29,6 +30,8 @@ pub const DEFAULT_CN_TARGET: &str = "https://www.baidu.com/favicon.ico";
 /// - 响应是几行明文，零依赖；
 /// - 持续可用性极高（CF 自身基础设施）。
 pub const DEFAULT_INTL_TARGET: &str = "https://www.cloudflare.com/cdn-cgi/trace";
+
+const KEY_UI_THEME: &str = "ui.theme";
 
 const KEY_CN_TARGET: &str = "proxy.latency_probe.cn_target";
 const KEY_INTL_TARGET: &str = "proxy.latency_probe.intl_target";
@@ -165,6 +168,19 @@ pub fn update_proxy_probe_settings(
         settings_repo::set(&conn, KEY_INTL_TARGET, v)?;
     }
     get_proxy_probe_settings(db)
+}
+
+pub fn get_ui_theme(db: &Database) -> Result<Option<String>, AppError> {
+    let conn = db.conn();
+    settings_repo::get(&conn, KEY_UI_THEME)
+}
+
+pub fn set_ui_theme(db: &Database, mode: &str) -> Result<(), AppError> {
+    if mode != "dark" && mode != "light" {
+        return Err(AppError::Internal("ui.theme 仅支持 light 或 dark".into()));
+    }
+    let conn = db.conn();
+    settings_repo::set(&conn, KEY_UI_THEME, mode)
 }
 
 fn validate_url(v: &str, field: &str) -> Result<(), AppError> {

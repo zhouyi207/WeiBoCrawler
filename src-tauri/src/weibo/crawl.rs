@@ -12,7 +12,7 @@ use rusqlite::Connection;
 use serde_json::Value;
 use tauri::Emitter;
 
-use crate::db::{account_repo, record_repo, task_repo};
+use crate::db::{account_repo, record_repo, request_log_repo, task_repo};
 use crate::error::AppError;
 use crate::model::account::Account;
 use crate::model::crawl_request::{CrawlRequest, CrawlRequestStatus, CrawlRequestType};
@@ -27,6 +27,28 @@ use crate::AppState;
 use super::api::{self, build_body_request, build_comment_l1_request, build_comment_l2_request};
 use super::list_parse::parse_list_html;
 use super::qrcode::USER_AGENT;
+
+fn log_crawl_http(
+    ctx: Option<&request_log_repo::CrawlHttpLogCtx<'_>>,
+    request_kind: &str,
+    phase: Option<&str>,
+    method: &str,
+    url: &Url,
+    status_code: Option<i64>,
+    error_message: Option<&str>,
+    duration_ms: i64,
+) {
+    request_log_repo::try_insert(
+        ctx,
+        request_kind,
+        phase,
+        method,
+        url.as_str(),
+        status_code,
+        error_message,
+        duration_ms,
+    );
+}
 
 /// 把 `reqwest::Error` 沿 `source()` 链展开成一行可读文本。
 ///
@@ -563,6 +585,7 @@ fn diagnose_list_page(html: &str, final_url: &str) -> String {
 /// 首页优先 WeiBoCrawler：`body_headers` + 默认 referer；失败再试导航头与其它 XHR 组合。翻页：`body_headers` + 上一页 URL，与 Python 一致。
 /// 每次 HTTP 尝试的明细写入返回的 `attempts`（供 `crawl_requests.response_data` 落库），**不再**写入 `records`。
 fn fetch_list_html_multi(
+    log_ctx: Option<&request_log_repo::CrawlHttpLogCtx<'_>>,
     bound_account_id: &str,
     client: &Client,
     url: &Url,
@@ -603,13 +626,51 @@ fn fetch_list_html_multi(
     for (si, (strategy_key, hdr)) in strategies.iter().enumerate() {
         let h = merge_weibo_stored_cookies(hdr.clone(), stored)?;
         let diag = ReqDiag::snapshot(url, &h);
-        let resp = client
-            .get(url.as_str())
-            .headers(h)
-            .send()
-            .map_err(|e| AppError::Network(fmt_reqwest_error(&e)))?;
+        let t0 = Instant::now();
+        let resp = match client.get(url.as_str()).headers(h).send() {
+            Ok(r) => r,
+            Err(e) => {
+                let msg = fmt_reqwest_error(&e);
+                log_crawl_http(
+                    log_ctx,
+                    "list_html",
+                    Some(strategy_key),
+                    "GET",
+                    url,
+                    None,
+                    Some(&msg),
+                    t0.elapsed().as_millis() as i64,
+                );
+                return Err(AppError::Network(msg));
+            }
+        };
         let status = resp.status();
-        let (html, charset_used, final_u) = read_response_text_with_charset(resp)?;
+        let code_i = status.as_u16() as i64;
+        let read_res = read_response_text_with_charset(resp);
+        let dur_ms = t0.elapsed().as_millis() as i64;
+        match &read_res {
+            Ok(_) => log_crawl_http(
+                log_ctx,
+                "list_html",
+                Some(strategy_key),
+                "GET",
+                url,
+                Some(code_i),
+                None,
+                dur_ms,
+            ),
+            Err(e) => log_crawl_http(
+                log_ctx,
+                "list_html",
+                Some(strategy_key),
+                "GET",
+                url,
+                Some(code_i),
+                Some(&e.to_string()),
+                dur_ms,
+            ),
+        }
+        let (html, charset_used, final_u) = read_res?;
         last_url = final_u.to_string();
         let parsed_n = parse_list_html(&html).len();
         let page_title = html_document_title(&html);
@@ -672,9 +733,8 @@ fn html_excerpt(s: &str, max_chars: usize) -> String {
 }
 
 /// 单次 HTTP 请求的「体格」快照。在 `client.send()` 之前用 [`ReqDiag::snapshot`]
-/// 抓一份，失败时通过 [`ReqDiag::warn`] 打到 stderr，并通过 [`ReqDiag::embed`]
-/// 把关键数字塞进 [`AppError::HttpStatus`] 的 `body_excerpt`，前端 / DB 排查
-/// HTTP 414 (URI Too Long) / 413 (Payload Too Large) 等「请求太大」类问题用。
+/// 抓一份，失败时通过 [`ReqDiag::embed`] 把关键数字塞进 [`AppError::HttpStatus`] 的
+/// `body_excerpt`（及前端 crawl-progress），便于排查 HTTP 414 / 413 等「请求太大」类问题。
 ///
 /// 注意 reqwest 用 `consume` 风格交付 headers，所以必须在 `.headers(h).send()`
 /// 之前抓快照（送进 send 之后 HeaderMap 已被 move）。
@@ -684,6 +744,8 @@ pub(crate) struct ReqDiag {
     pub header_count: usize,
     /// 请求行 + 头部 + CRLF 的近似字节数，用于和 CDN 8KB 上限对比。
     pub request_size_approx: usize,
+    /// URL 前缀（截断）；曾用于控制台 `warn`，现仅保留字段供后续诊断扩展。
+    #[allow(dead_code)]
     pub url_head: String,
 }
 
@@ -725,13 +787,8 @@ impl ReqDiag {
         )
     }
 
-    /// 失败时打 stderr，附完整 URL（截 200）方便人工 grep。
-    pub fn warn(&self, label: &str, code: u16) {
-        log::warn!(
-            "[weibo {label}] HTTP {code} url_len={} cookie_len={} headers={} req_size≈{}b url_head={}",
-            self.url_len, self.cookie_len, self.header_count, self.request_size_approx, self.url_head
-        );
-    }
+    /// 预留钩子：不再默认 `warn!` 打控制台（易刷屏）；需要时可改为 `log::debug!` 并设 `RUST_LOG`。
+    pub fn warn(&self, _label: &str, _code: u16) {}
 }
 
 /// 列表页 HTML 是否命中典型登录拦截特征。`final_url` 跳到 `passport.weibo.com`
@@ -822,7 +879,16 @@ fn run_list(
         } else {
             None
         };
+        let log_ctx = request_log_repo::CrawlHttpLogCtx {
+            conn,
+            platform_tag: task.platform.as_tag(),
+            task_id,
+            crawl_request_id: None,
+            account_id: Some(bound_account_id),
+            proxy_id: None,
+        };
         let (html, final_url, _) = fetch_list_html_multi(
+            Some(&log_ctx),
             bound_account_id,
             client,
             &url,
@@ -889,6 +955,7 @@ fn run_body(
     conn: &Connection,
     client: &Client,
     task: &CrawlTask,
+    bound_account_id: &str,
     stored: &WeiboStoredCookies,
     status_ids: &[String],
     rate_limit: i64,
@@ -900,19 +967,74 @@ fn run_body(
     for id in status_ids {
         let (url, mut headers) = build_body_request(id);
         headers = merge_weibo_stored_cookies(headers, stored)?;
-        let resp = client
-            .get(url.as_str())
-            .headers(headers)
-            .send()
-            .map_err(|e| AppError::Network(fmt_reqwest_error(&e)))?;
+        let log_ctx = request_log_repo::CrawlHttpLogCtx {
+            conn,
+            platform_tag: task.platform.as_tag(),
+            task_id,
+            crawl_request_id: None,
+            account_id: Some(bound_account_id),
+            proxy_id: None,
+        };
+        let t0 = Instant::now();
+        let resp = match client.get(url.as_str()).headers(headers).send() {
+            Ok(r) => r,
+            Err(e) => {
+                let msg = fmt_reqwest_error(&e);
+                log_crawl_http(
+                    Some(&log_ctx),
+                    "body",
+                    None,
+                    "GET",
+                    &url,
+                    None,
+                    Some(&msg),
+                    t0.elapsed().as_millis() as i64,
+                );
+                return Err(AppError::Network(msg));
+            }
+        };
         let status = resp.status();
+        let code = status.as_u16();
         if !status.is_success() {
             let body_excerpt = resp.text().ok().map(|t| html_excerpt(&t, 256)).unwrap_or_default();
-            return Err(AppError::HttpStatus { code: status.as_u16(), body_excerpt });
+            log_crawl_http(
+                Some(&log_ctx),
+                "body",
+                None,
+                "GET",
+                &url,
+                Some(code as i64),
+                None,
+                t0.elapsed().as_millis() as i64,
+            );
+            return Err(AppError::HttpStatus { code, body_excerpt });
         }
-        let v: Value = resp
-            .json()
-            .map_err(|e| AppError::Internal(format!("正文 JSON: {e}")))?;
+        let v: Value = match resp.json() {
+            Ok(v) => v,
+            Err(e) => {
+                log_crawl_http(
+                    Some(&log_ctx),
+                    "body",
+                    None,
+                    "GET",
+                    &url,
+                    Some(code as i64),
+                    Some(&format!("正文 JSON: {e}")),
+                    t0.elapsed().as_millis() as i64,
+                );
+                return Err(AppError::Internal(format!("正文 JSON: {e}")));
+            }
+        };
+        log_crawl_http(
+            Some(&log_ctx),
+            "body",
+            None,
+            "GET",
+            &url,
+            Some(code as i64),
+            None,
+            t0.elapsed().as_millis() as i64,
+        );
         if let Some(err) = check_business_reject(&v) {
             return Err(err);
         }
@@ -943,6 +1065,7 @@ fn run_comments(
     conn: &Connection,
     client: &Client,
     task: &CrawlTask,
+    bound_account_id: &str,
     stored: &WeiboStoredCookies,
     pairs: &[(String, String)],
     level2: bool,
@@ -960,19 +1083,75 @@ fn run_comments(
             build_comment_l1_request(uid, mid, None, &path)
         };
         let headers = merge_weibo_stored_cookies(headers, stored)?;
-        let resp = client
-            .get(url.as_str())
-            .headers(headers)
-            .send()
-            .map_err(|e| AppError::Network(fmt_reqwest_error(&e)))?;
+        let log_ctx = request_log_repo::CrawlHttpLogCtx {
+            conn,
+            platform_tag: task.platform.as_tag(),
+            task_id,
+            crawl_request_id: None,
+            account_id: Some(bound_account_id),
+            proxy_id: None,
+        };
+        let kind = if level2 { "comment_l2" } else { "comment_l1" };
+        let t0 = Instant::now();
+        let resp = match client.get(url.as_str()).headers(headers).send() {
+            Ok(r) => r,
+            Err(e) => {
+                let msg = fmt_reqwest_error(&e);
+                log_crawl_http(
+                    Some(&log_ctx),
+                    kind,
+                    None,
+                    "GET",
+                    &url,
+                    None,
+                    Some(&msg),
+                    t0.elapsed().as_millis() as i64,
+                );
+                return Err(AppError::Network(msg));
+            }
+        };
         let status = resp.status();
+        let code = status.as_u16();
         if !status.is_success() {
             let body_excerpt = resp.text().ok().map(|t| html_excerpt(&t, 256)).unwrap_or_default();
-            return Err(AppError::HttpStatus { code: status.as_u16(), body_excerpt });
+            log_crawl_http(
+                Some(&log_ctx),
+                kind,
+                None,
+                "GET",
+                &url,
+                Some(code as i64),
+                None,
+                t0.elapsed().as_millis() as i64,
+            );
+            return Err(AppError::HttpStatus { code, body_excerpt });
         }
-        let root: Value = resp
-            .json()
-            .map_err(|e| AppError::Internal(format!("评论 JSON: {e}")))?;
+        let root: Value = match resp.json() {
+            Ok(v) => v,
+            Err(e) => {
+                log_crawl_http(
+                    Some(&log_ctx),
+                    kind,
+                    None,
+                    "GET",
+                    &url,
+                    Some(code as i64),
+                    Some(&format!("评论 JSON: {e}")),
+                    t0.elapsed().as_millis() as i64,
+                );
+                return Err(AppError::Internal(format!("评论 JSON: {e}")));
+            }
+        };
+        log_crawl_http(
+            Some(&log_ctx),
+            kind,
+            None,
+            "GET",
+            &url,
+            Some(code as i64),
+            None,
+            t0.elapsed().as_millis() as i64,
+        );
         if let Some(err) = check_business_reject(&root) {
             return Err(err);
         }
@@ -1096,6 +1275,7 @@ pub fn run_weibo_crawl(
                 &conn,
                 &client,
                 &task,
+                &account.id,
                 &stored,
                 status_ids.as_slice(),
                 rate,
@@ -1114,6 +1294,7 @@ pub fn run_weibo_crawl(
                     &conn,
                     &client,
                     &task,
+                    &account.id,
                     &stored,
                     &p,
                     false,
@@ -1134,6 +1315,7 @@ pub fn run_weibo_crawl(
                     &conn,
                     &client,
                     &task,
+                    &account.id,
                     &stored,
                     &p,
                     true,
@@ -1241,7 +1423,16 @@ pub(crate) fn execute_list_page(
 
     let bound_account_id = req.account_id.as_deref().unwrap_or("");
 
+    let log_ctx = request_log_repo::CrawlHttpLogCtx {
+        conn,
+        platform_tag: task.platform.as_tag(),
+        task_id: &task.id,
+        crawl_request_id: Some(req.id.as_str()),
+        account_id: req.account_id.as_deref(),
+        proxy_id: req.proxy_id.as_deref(),
+    };
     let (html, final_url, list_fetch_attempts) = fetch_list_html_multi(
+        Some(&log_ctx),
         bound_account_id,
         client,
         &url,
@@ -1341,23 +1532,78 @@ pub(crate) fn execute_body(
     let (url, mut headers) = build_body_request(status_id);
     headers = merge_weibo_stored_cookies(headers, stored)?;
     let diag = ReqDiag::snapshot(&url, &headers);
-    let resp = client
-        .get(url.as_str())
-        .headers(headers)
-        .send()
-        .map_err(|e| AppError::Network(fmt_reqwest_error(&e)))?;
+    let log_ctx = request_log_repo::CrawlHttpLogCtx {
+        conn,
+        platform_tag: task.platform.as_tag(),
+        task_id: &task.id,
+        crawl_request_id: Some(req.id.as_str()),
+        account_id: req.account_id.as_deref(),
+        proxy_id: req.proxy_id.as_deref(),
+    };
+    let t0 = Instant::now();
+    let resp = match client.get(url.as_str()).headers(headers).send() {
+        Ok(r) => r,
+        Err(e) => {
+            let msg = fmt_reqwest_error(&e);
+            log_crawl_http(
+                Some(&log_ctx),
+                "body",
+                None,
+                "GET",
+                &url,
+                None,
+                Some(&msg),
+                t0.elapsed().as_millis() as i64,
+            );
+            return Err(AppError::Network(msg));
+        }
+    };
     let status = resp.status();
+    let code = status.as_u16();
     if !status.is_success() {
-        diag.warn(&format!("正文 id={status_id}"), status.as_u16());
+        diag.warn(&format!("正文 id={status_id}"), code);
         let body_excerpt = resp.text().ok().map(|t| html_excerpt(&t, 256)).unwrap_or_default();
+        log_crawl_http(
+            Some(&log_ctx),
+            "body",
+            None,
+            "GET",
+            &url,
+            Some(code as i64),
+            None,
+            t0.elapsed().as_millis() as i64,
+        );
         return Err(AppError::HttpStatus {
-            code: status.as_u16(),
+            code,
             body_excerpt: diag.embed(body_excerpt),
         });
     }
-    let v: Value = resp
-        .json()
-        .map_err(|e| AppError::Internal(format!("正文 JSON: {e}")))?;
+    let v: Value = match resp.json() {
+        Ok(v) => v,
+        Err(e) => {
+            log_crawl_http(
+                Some(&log_ctx),
+                "body",
+                None,
+                "GET",
+                &url,
+                Some(code as i64),
+                Some(&format!("正文 JSON: {e}")),
+                t0.elapsed().as_millis() as i64,
+            );
+            return Err(AppError::Internal(format!("正文 JSON: {e}")));
+        }
+    };
+    log_crawl_http(
+        Some(&log_ctx),
+        "body",
+        None,
+        "GET",
+        &url,
+        Some(code as i64),
+        None,
+        t0.elapsed().as_millis() as i64,
+    );
     if let Some(err) = check_business_reject(&v) {
         return Err(err);
     }
@@ -1522,6 +1768,16 @@ pub(crate) fn execute_comment(
     let mut failed_pages: usize = 0;
     let mut is_first_page = true;
 
+    let log_ctx = request_log_repo::CrawlHttpLogCtx {
+        conn,
+        platform_tag: task.platform.as_tag(),
+        task_id: &task.id,
+        crawl_request_id: Some(req.id.as_str()),
+        account_id: req.account_id.as_deref(),
+        proxy_id: req.proxy_id.as_deref(),
+    };
+    let kind = if level2 { "comment_l2" } else { "comment_l1" };
+
     loop {
         let page_start = Instant::now();
         let (url, headers) = if level2 {
@@ -1531,22 +1787,47 @@ pub(crate) fn execute_comment(
         };
         let headers = merge_weibo_stored_cookies(headers, stored)?;
         let diag = ReqDiag::snapshot(&url, &headers);
-        let resp = client
-            .get(url.as_str())
-            .headers(headers)
-            .send()
-            .map_err(|e| AppError::Network(fmt_reqwest_error(&e)))?;
+        let phase = current_max_id.as_deref();
+        let t0 = Instant::now();
+        let resp = match client.get(url.as_str()).headers(headers).send() {
+            Ok(r) => r,
+            Err(e) => {
+                let msg = fmt_reqwest_error(&e);
+                log_crawl_http(
+                    Some(&log_ctx),
+                    kind,
+                    phase,
+                    "GET",
+                    &url,
+                    None,
+                    Some(&msg),
+                    t0.elapsed().as_millis() as i64,
+                );
+                return Err(AppError::Network(msg));
+            }
+        };
         let status = resp.status();
+        let code = status.as_u16();
         if !status.is_success() {
             let level_label = if level2 { "二级评论" } else { "一级评论" };
             diag.warn(
                 &format!("{level_label} uid={uid} mid={mid}"),
-                status.as_u16(),
+                code,
+            );
+            log_crawl_http(
+                Some(&log_ctx),
+                kind,
+                phase,
+                "GET",
+                &url,
+                Some(code as i64),
+                None,
+                t0.elapsed().as_millis() as i64,
             );
             if is_first_page {
                 let body_excerpt = resp.text().ok().map(|t| html_excerpt(&t, 256)).unwrap_or_default();
                 return Err(AppError::HttpStatus {
-                    code: status.as_u16(),
+                    code,
                     body_excerpt: diag.embed(body_excerpt),
                 });
             }
@@ -1558,9 +1839,32 @@ pub(crate) fn execute_comment(
         }
         is_first_page = false;
 
-        let root: Value = resp
-            .json()
-            .map_err(|e| AppError::Internal(format!("评论 JSON: {e}")))?;
+        let root: Value = match resp.json() {
+            Ok(v) => v,
+            Err(e) => {
+                log_crawl_http(
+                    Some(&log_ctx),
+                    kind,
+                    phase,
+                    "GET",
+                    &url,
+                    Some(code as i64),
+                    Some(&format!("评论 JSON: {e}")),
+                    t0.elapsed().as_millis() as i64,
+                );
+                return Err(AppError::Internal(format!("评论 JSON: {e}")));
+            }
+        };
+        log_crawl_http(
+            Some(&log_ctx),
+            kind,
+            phase,
+            "GET",
+            &url,
+            Some(code as i64),
+            None,
+            t0.elapsed().as_millis() as i64,
+        );
         if let Some(err) = check_business_reject(&root) {
             return Err(err);
         }

@@ -241,6 +241,20 @@ pub fn pause_task(db: &Database, id: &str) -> Result<(), AppError> {
     task_repo::update_status(&conn, id, TaskStatus::Paused)
 }
 
+/// 异常退出后重新打开应用：将所有仍为 `running` 的任务改为暂停，并把卡在 `running` 的请求行恢复为 `pending`。
+pub fn reconcile_stale_running_tasks_to_paused(db: &Database) -> Result<(), AppError> {
+    let conn = db.conn();
+    let all = task_repo::list(&conn, None)?;
+    for task in all
+        .into_iter()
+        .filter(|t| t.status == TaskStatus::Running)
+    {
+        crawl_request_repo::reset_running_to_pending(&conn, &task.id)?;
+        task_repo::update_status(&conn, &task.id, TaskStatus::Paused)?;
+    }
+    Ok(())
+}
+
 pub fn get_task_progress(db: &Database, task_id: &str) -> Result<TaskProgress, AppError> {
     let conn = db.conn();
     crawl_request_repo::count_by_status(&conn, task_id)

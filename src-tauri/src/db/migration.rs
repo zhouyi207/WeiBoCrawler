@@ -87,11 +87,12 @@ pub fn run(conn: &Connection) -> Result<(), AppError> {
     migrate_accounts_slim_add_created_at(conn)?;
     migrate_proxies_add_global_probe_ok(conn)?;
     migrate_app_event_log(conn)?;
+    migrate_request_logs_table(conn)?;
     seed_local_direct_proxy(conn)?;
     Ok(())
 }
 
-/// 应用事件日志表；首页「最近日志」数据源。已废弃的 `logs` 表若仍存在则删除。
+/// 应用事件日志表；首页「最近日志」数据源。
 fn migrate_app_event_log(conn: &Connection) -> Result<(), AppError> {
     conn.execute_batch(
         "CREATE TABLE IF NOT EXISTS app_event_log (
@@ -109,7 +110,32 @@ fn migrate_app_event_log(conn: &Connection) -> Result<(), AppError> {
         CREATE INDEX IF NOT EXISTS idx_app_event_log_occurred ON app_event_log(occurred_at DESC);
         ",
     )?;
-    conn.execute("DROP TABLE IF EXISTS logs", [])?;
+    Ok(())
+}
+
+/// 采集与其它模块发出的 HTTP 请求日志（导航「请求日志」页）。
+fn migrate_request_logs_table(conn: &Connection) -> Result<(), AppError> {
+    conn.execute_batch(
+        "CREATE TABLE IF NOT EXISTS logs (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            occurred_at TEXT NOT NULL,
+            platform TEXT NOT NULL,
+            task_id TEXT,
+            crawl_request_id TEXT,
+            account_id TEXT,
+            proxy_id TEXT,
+            request_kind TEXT NOT NULL,
+            phase TEXT,
+            method TEXT NOT NULL DEFAULT 'GET',
+            url TEXT NOT NULL,
+            status_code INTEGER,
+            duration_ms INTEGER NOT NULL,
+            error_message TEXT
+        );
+        CREATE INDEX IF NOT EXISTS idx_logs_occurred ON logs(occurred_at DESC);
+        CREATE INDEX IF NOT EXISTS idx_logs_task ON logs(task_id);
+        ",
+    )?;
     Ok(())
 }
 

@@ -4,6 +4,7 @@ import { openUrl } from "@tauri-apps/plugin-opener";
 import { MinusIcon, MoonIcon, SunIcon, XIcon } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { getTheme, toggleTheme } from "@/app/theme";
+import { useCloseGuard } from "@/app/CloseGuard";
 
 const WEIBO_CRAWLER_GITHUB = "https://github.com/zhouyi207/WeiBoCrawler";
 
@@ -13,6 +14,7 @@ const WEIBO_CRAWLER_GITHUB = "https://github.com/zhouyi207/WeiBoCrawler";
  * `data-tauri-drag-region`。
  */
 export function WindowControls() {
+  const { requestClose } = useCloseGuard();
   const [maximized, setMaximized] = useState(false);
   const [isDark, setIsDark] = useState(() => getTheme() === "dark");
 
@@ -78,7 +80,7 @@ export function WindowControls() {
       </button>
       <button
         type="button"
-        onClick={() => void win.close()}
+        onClick={() => void requestClose()}
         className="group flex h-full w-12 items-center justify-center text-muted-foreground transition-colors hover:bg-[#e81123] hover:text-white"
         aria-label="关闭"
         title="关闭"

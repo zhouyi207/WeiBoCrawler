@@ -143,12 +143,8 @@ export function IpLogModal({
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       {/*
-        v2 布局策略（修正前一版的"按区块固定 + 仅时间线滚动"被撑开的问题）：
-        - DialogContent: `max-h-[85vh]` + `overflow-hidden`，确保整体永不超过视口；
-        - 三段式 flex 列：Header（不滚） / Body（统一滚动区） / Footer（不滚）；
-        - Body 即 `flex-1 min-h-0 overflow-y-auto`，把所有可变内容（Alert、统计、
-          时间线列表）一起放进去，超出就出整体竖向滚动条。
-        - 时间线列表内部不再单独 ScrollArea，避免出现"双层滚动"且互相不让步。
+        Body：`flex-1 min-h-0 overflow-y-auto` 不加 vertical padding，sticky 标题才能贴顶；
+        统计区 `px-4 pt-3`，「事件时间线」`sticky top-0` 全宽，列表 `px-4 pb-4`。
       */}
       <DialogContent className="flex max-h-[85vh] flex-col gap-0 overflow-hidden p-0 sm:max-w-2xl">
         <DialogHeader className="shrink-0 border-b border-border/60 px-4 py-3">
@@ -185,56 +181,55 @@ export function IpLogModal({
           </DialogDescription>
         </DialogHeader>
 
-        <div className="flex min-h-0 flex-1 flex-col gap-4 overflow-y-auto px-4 py-3 pb-4">
-          {error && (
-            <Alert variant="destructive">
-              <AlertCircleIcon />
-              <AlertTitle>加载失败</AlertTitle>
-              <AlertDescription className="break-words">
-                {error}
-              </AlertDescription>
-            </Alert>
-          )}
+        <div className="flex min-h-0 flex-1 flex-col overflow-y-auto">
+          <div className="flex flex-col gap-4 px-4 pt-3">
+            {error && (
+              <Alert variant="destructive">
+                <AlertCircleIcon />
+                <AlertTitle>加载失败</AlertTitle>
+                <AlertDescription className="break-words">
+                  {error}
+                </AlertDescription>
+              </Alert>
+            )}
 
-          <div className="grid grid-cols-2 gap-3 text-sm">
-            <div className="min-w-0 rounded-md border p-2">
-              <div className="text-xs text-muted-foreground">近窗口错误数</div>
-              <div className="text-lg font-semibold">{logs.length}</div>
-            </div>
-            <div className="min-w-0 rounded-md border p-2">
-              <div className="text-xs text-muted-foreground">最近一次</div>
-              <div
-                className="truncate text-sm"
-                title={logs[0]?.occurredAt ?? ""}
-              >
-                {logs[0] ? formatOccurredAt(logs[0].occurredAt) : "—"}
+            <div className="grid grid-cols-2 gap-3 text-sm">
+              <div className="min-w-0 rounded-md border p-2">
+                <div className="text-xs text-muted-foreground">近窗口错误数</div>
+                <div className="text-lg font-semibold">{logs.length}</div>
+              </div>
+              <div className="min-w-0 rounded-md border p-2">
+                <div className="text-xs text-muted-foreground">最近一次</div>
+                <div
+                  className="truncate text-sm"
+                  title={logs[0]?.occurredAt ?? ""}
+                >
+                  {logs[0] ? formatOccurredAt(logs[0].occurredAt) : "—"}
+                </div>
               </div>
             </div>
+
+            <Separator />
           </div>
 
-          <Separator />
+          <div className="sticky top-0 z-10 flex items-center justify-between gap-2 border-b border-border/60 bg-popover px-4 py-2 supports-backdrop-filter:bg-popover/95">
+            <span className="min-w-0 text-sm font-medium">事件时间线</span>
+            <Button
+              variant="ghost"
+              size="sm"
+              className="shrink-0"
+              onClick={() => void refresh()}
+              disabled={loading}
+            >
+              <RefreshCwIcon
+                className={cn("size-3.5", loading && "animate-spin")}
+              />
+              刷新
+            </Button>
+          </div>
 
-          <div className="space-y-2">
-            {/*
-              时间线标题做成 sticky，滚动时仍能看到"刷新"按钮，避免要拉回顶部才能触发。
-              背景色对齐 popover 防止文字穿透。
-            */}
-            <div className="sticky top-0 z-10 flex items-center justify-between bg-popover/95 py-1 backdrop-blur-sm supports-backdrop-filter:bg-popover/85">
-              <span className="text-sm font-medium">事件时间线</span>
-              <Button
-                variant="ghost"
-                size="sm"
-                onClick={() => void refresh()}
-                disabled={loading}
-              >
-                <RefreshCwIcon
-                  className={cn("size-3.5", loading && "animate-spin")}
-                />
-                刷新
-              </Button>
-            </div>
-
-            <div className="rounded-md border">
+          <div className="space-y-2 px-4 pb-4 pt-2">
+            <div className="overflow-hidden rounded-md border">
               {loading && logs.length === 0 ? (
                 <div className="p-6 text-center text-sm text-muted-foreground">
                   加载中…
@@ -245,54 +240,67 @@ export function IpLogModal({
                   近 24 小时内没有该代理的失败记录。
                 </div>
               ) : (
-                <ul className="divide-y">
-                  {logs.map((log) => (
-                    <li key={log.id} className="space-y-1 p-2.5 text-xs">
-                      <div className="flex flex-wrap items-center gap-x-2 gap-y-1">
-                        <Badge
-                          variant={
-                            log.errorKind === "network"
-                              ? "destructive"
-                              : "secondary"
-                          }
-                          className="shrink-0 text-[10px]"
-                        >
-                          {KIND_LABEL[log.errorKind] ?? log.errorKind}
-                          {log.httpStatus != null && ` · ${log.httpStatus}`}
-                        </Badge>
-                        {/*
-                          platform pill：v4 起 proxy_failure_events 携带平台。
-                          老库回填后多数有值；个别 null 视为「未知平台」。
-                        */}
-                        {log.platform ? (
+                <ul className="px-1">
+                  {logs.map((log, index) => (
+                    <li
+                      key={log.id}
+                      className={cn(
+                        "relative flex gap-3 py-3 pl-2 pr-1",
+                        index !== logs.length - 1 && "border-b border-border/50",
+                      )}
+                    >
+                      <div
+                        className="flex w-5 shrink-0 flex-col items-center pt-1"
+                        aria-hidden
+                      >
+                        <span className="z-1 size-2 shrink-0 rounded-full bg-muted-foreground/45 ring-2 ring-popover" />
+                        {index !== logs.length - 1 ? (
+                          <span className="mt-1 w-px flex-1 min-h-3 bg-border" />
+                        ) : null}
+                      </div>
+                      <div className="min-w-0 flex-1 space-y-1.5">
+                        <div className="flex flex-wrap items-center gap-1.5">
                           <Badge
-                            variant="outline"
-                            className="shrink-0 text-[10px] font-normal"
-                            title={`该次失败发生在「${platformLabel(log.platform)}」任务上`}
+                            variant={
+                              log.errorKind === "network"
+                                ? "destructive"
+                                : "secondary"
+                            }
+                            className="max-w-full text-[10px] break-words whitespace-normal"
                           >
-                            {platformLabel(log.platform)}
+                            {KIND_LABEL[log.errorKind] ?? log.errorKind}
+                            {log.httpStatus != null && ` · ${log.httpStatus}`}
                           </Badge>
-                        ) : (
-                          <Badge
-                            variant="outline"
-                            className="shrink-0 text-[10px] font-normal text-muted-foreground"
-                            title="历史事件未带平台信息"
-                          >
-                            未知平台
-                          </Badge>
-                        )}
-                        <span
-                          className="shrink-0 text-muted-foreground"
+                          {log.platform ? (
+                            <Badge
+                              variant="outline"
+                              className="max-w-full text-[10px] font-normal break-words whitespace-normal"
+                              title={`该次失败发生在「${platformLabel(log.platform)}」任务上`}
+                            >
+                              {platformLabel(log.platform)}
+                            </Badge>
+                          ) : (
+                            <Badge
+                              variant="outline"
+                              className="max-w-full text-[10px] font-normal break-words whitespace-normal text-muted-foreground"
+                              title="历史事件未带平台信息"
+                            >
+                              未知平台
+                            </Badge>
+                          )}
+                        </div>
+                        <time
+                          className="block text-[11px] leading-snug text-muted-foreground tabular-nums"
                           title={log.occurredAt}
                         >
                           {formatOccurredAt(log.occurredAt)}
-                        </span>
+                        </time>
+                        {log.message ? (
+                          <p className="text-xs leading-relaxed text-muted-foreground [overflow-wrap:anywhere]">
+                            {log.message}
+                          </p>
+                        ) : null}
                       </div>
-                      {log.message && (
-                        <div className="break-all text-muted-foreground">
-                          {log.message}
-                        </div>
-                      )}
                     </li>
                   ))}
                 </ul>

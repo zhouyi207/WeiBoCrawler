@@ -15,7 +15,7 @@ use model::account::Account;
 use queue::message::CrawlCommand;
 use queue::registry::WorkerRegistry;
 use queue::runtime_buffer::RuntimeBuffer;
-use tauri::Manager;
+use tauri::{Emitter, Manager, WindowEvent};
 
 pub struct AppState {
     pub db: Database,
@@ -102,9 +102,26 @@ pub fn run() {
                 queue::worker::run(rx, handle).await;
             });
 
+            #[cfg(desktop)]
+            if let Some(win) = app.get_webview_window("main") {
+                let app_handle = app.handle().clone();
+                let _ = win.on_window_event(move |event| {
+                    if let WindowEvent::CloseRequested { api, .. } = event {
+                        if command::window::take_allow_close() {
+                            return;
+                        }
+                        api.prevent_close();
+                        let _ = app_handle.emit("app-close-requested", ());
+                    }
+                });
+            }
+
             Ok(())
         })
         .invoke_handler(tauri::generate_handler![
+            command::window::allow_close_once,
+            command::ui::get_ui_theme,
+            command::ui::set_ui_theme,
             // home
             command::home::get_dashboard_stats,
             // task
@@ -114,6 +131,7 @@ pub fn run() {
             command::task::delete_task,
             command::task::start_task,
             command::task::pause_task,
+            command::task::reconcile_stale_running_tasks,
             command::task::restart_task,
             command::task::get_task_progress,
             command::task::retry_failed_requests,
@@ -146,6 +164,8 @@ pub fn run() {
             command::record::deduplicate_records,
             command::record::delete_records_filtered,
             command::record::write_export_file,
+            command::request_log::list_request_logs,
+            command::request_log::clear_request_logs,
         ])
         .run(tauri::generate_context!())
         .expect("error while running tauri application");

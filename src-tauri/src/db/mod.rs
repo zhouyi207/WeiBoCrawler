@@ -2,6 +2,7 @@ pub mod account_repo;
 pub mod app_event_repo;
 pub mod crawl_request_repo;
 pub mod migration;
+pub mod request_log_repo;
 pub mod proxy_repo;
 pub mod proxy_runtime_repo;
 pub mod record_repo;

@@ -12,6 +12,7 @@ import type {
   ProxyLogEntry,
   ProxyPlatformRow,
   ProxyProbeSettings,
+  RequestLogEntry,
   WeiboQrPollResponse,
   WorkerBackoffSettings,
 } from "@/features/domain/types";
@@ -23,6 +24,37 @@ import type {
  */
 export function getDashboardStats(): Promise<DashboardStats> {
   return invoke<DashboardStats>("get_dashboard_stats");
+}
+
+export interface RequestLogsPageResult {
+  items: RequestLogEntry[];
+  total: number;
+}
+
+/** 分页读取 `logs` 表（采集 HTTP 等），默认每页 100 条。 */
+export function listRequestLogs(
+  limit?: number,
+  offset?: number,
+): Promise<RequestLogsPageResult> {
+  return invoke<RequestLogsPageResult>("list_request_logs", {
+    limit: limit ?? null,
+    offset: offset ?? null,
+  });
+}
+
+/** 清空 `logs` 表全部请求日志。 */
+export function clearRequestLogs(): Promise<void> {
+  return invoke<void>("clear_request_logs");
+}
+
+export type UiThemeMode = "light" | "dark";
+
+export function getUiTheme(): Promise<UiThemeMode | null> {
+  return invoke<UiThemeMode | null>("get_ui_theme");
+}
+
+export function setUiTheme(mode: UiThemeMode): Promise<void> {
+  return invoke<void>("set_ui_theme", { mode });
 }
 
 export function listAccounts(platform?: string | null): Promise<Account[]> {
@@ -235,6 +267,16 @@ export function startTask(id: string): Promise<void> {
 
 export function pauseTask(id: string): Promise<void> {
   return invoke<void>("pause_task", { id });
+}
+
+/** 冷启动恢复：将所有仍为运行中的任务改为暂停并重置队列中卡住的 running 行。 */
+export function reconcileStaleRunningTasks(): Promise<void> {
+  return invoke<void>("reconcile_stale_running_tasks");
+}
+
+/** 标记下一次窗口关闭为已确认，与 Rust 侧 `CloseRequested` 拦截配合使用。 */
+export function allowCloseOnce(): Promise<void> {
+  return invoke<void>("allow_close_once");
 }
 
 export function restartTask(id: string): Promise<void> {

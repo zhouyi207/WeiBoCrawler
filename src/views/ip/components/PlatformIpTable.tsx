@@ -64,9 +64,7 @@ export function PlatformIpTable({
           <TableHead className="text-center">运行账号数量</TableHead>
           <TableHead className="text-center">状态</TableHead>
           <TableHead className="text-center">风险系数</TableHead>
-          <TableHead className="w-[44px] text-center">
-            <span className="sr-only">操作</span>
-          </TableHead>
+          <TableHead className="w-[72px] text-center">操作</TableHead>
         </TableRow>
       </TableHeader>
       <TableBody>

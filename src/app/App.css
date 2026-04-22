@@ -81,6 +81,10 @@
     --sidebar-accent-foreground: oklch(0.205 0 0);
     --sidebar-border: oklch(0.922 0 0);
     --sidebar-ring: oklch(0.708 0 0);
+    /* 原生滚动条 / 自绘条共用（浅色：深灰滑块 + 浅轨） */
+    --scrollbar-thumb: color-mix(in oklch, var(--foreground) 28%, transparent);
+    --scrollbar-thumb-hover: color-mix(in oklch, var(--foreground) 42%, transparent);
+    --scrollbar-track: color-mix(in oklch, var(--foreground) 6%, transparent);
 }
 
 .dark {
@@ -115,18 +119,24 @@
     --sidebar-accent-foreground: oklch(0.985 0 0);
     --sidebar-border: oklch(1 0 0 / 10%);
     --sidebar-ring: oklch(0.556 0 0);
+    /* 深色：浅灰半透明滑块，避免 WebView 默认亮灰条 */
+    --scrollbar-thumb: color-mix(in oklch, var(--muted-foreground) 45%, transparent);
+    --scrollbar-thumb-hover: color-mix(in oklch, var(--muted-foreground) 65%, transparent);
+    --scrollbar-track: color-mix(in oklch, var(--foreground) 5%, transparent);
 }
 
 @layer base {
   * {
     @apply border-border outline-ring/50;
-    }
+    scrollbar-width: thin;
+    scrollbar-color: var(--scrollbar-thumb) var(--scrollbar-track);
+  }
   body {
     @apply bg-background text-foreground;
-    }
+  }
   html {
     @apply font-sans;
-    }
+  }
 }
 
 .floating-scroll-area-viewport {
@@ -135,4 +145,25 @@
 }
 .floating-scroll-area-viewport::-webkit-scrollbar {
   display: none;
+}
+
+/* WebKit / Tauri WebView：与主题变量一致（不作用于已隐藏条的 FloatingScrollArea 视口） */
+@supports selector(::-webkit-scrollbar-thumb) {
+  *::-webkit-scrollbar {
+    width: 8px;
+    height: 8px;
+  }
+  *::-webkit-scrollbar-track {
+    background: var(--scrollbar-track);
+    border-radius: 9999px;
+  }
+  *::-webkit-scrollbar-thumb {
+    background-color: var(--scrollbar-thumb);
+    border-radius: 9999px;
+    border: 2px solid transparent;
+    background-clip: padding-box;
+  }
+  *::-webkit-scrollbar-thumb:hover {
+    background-color: var(--scrollbar-thumb-hover);
+  }
 }

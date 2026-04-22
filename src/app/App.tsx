@@ -11,6 +11,7 @@ import { CrawlPage } from "@/views/crawl/CrawlPage";
 import { AccountPage } from "@/views/account/AccountPage";
 import { IpPage } from "@/views/ip/IpPage";
 import { DatabasePage } from "@/views/database/DatabasePage";
+import { RequestLogsPage } from "@/views/request-logs/RequestLogsPage";
 
 function AppShell() {
   const { pathname } = useLocation();
@@ -54,6 +55,7 @@ export default function App() {
         <Route path="account" element={<AccountPage />} />
         <Route path="ip" element={<IpPage />} />
         <Route path="database" element={<DatabasePage />} />
+        <Route path="request-logs" element={<RequestLogsPage />} />
         <Route path="*" element={<Navigate to="/" replace />} />
       </Route>
     </Routes>

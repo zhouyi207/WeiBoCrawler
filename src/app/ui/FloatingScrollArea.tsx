@@ -19,7 +19,7 @@ export function FloatingScrollArea({
         orientation="vertical"
         className="pointer-events-auto absolute top-0 right-0 flex w-1.5 touch-none p-px opacity-0 transition-opacity select-none hover:w-2.5 hover:opacity-100 data-[state=visible]:opacity-100"
       >
-        <ScrollAreaPrimitive.ScrollAreaThumb className="relative flex-1 rounded-full bg-foreground/20 transition-colors hover:bg-foreground/40" />
+        <ScrollAreaPrimitive.ScrollAreaThumb className="relative flex-1 rounded-full bg-[var(--scrollbar-thumb)] transition-colors hover:bg-[var(--scrollbar-thumb-hover)]" />
       </ScrollAreaPrimitive.ScrollAreaScrollbar>
       <ScrollAreaPrimitive.Corner />
     </ScrollAreaPrimitive.Root>

@@ -251,39 +251,41 @@ export function HomePage() {
                   最近日志
                 </CardTitle>
               </CardHeader>
-              <CardContent>
+              <CardContent className="min-h-0">
                 {recentLogs.length === 0 ? (
                   <p className="text-sm text-muted-foreground">暂无日志</p>
                 ) : (
-                  <div className="space-y-3">
-                    {recentLogs.map((log, i) => (
-                      <div key={`${log.time}-${log.scope}-${log.action}-${i}`}>
-                        <div className="flex flex-wrap items-start gap-2 sm:gap-3">
-                          <span className="mt-0.5 shrink-0 text-xs tabular-nums text-muted-foreground">
-                            {log.time}
-                          </span>
-                          <Badge
-                            variant="outline"
-                            className="shrink-0 text-[10px] font-normal"
-                          >
-                            {logScopeLabel(log.scope)}
-                          </Badge>
-                          <Badge
-                            variant="secondary"
-                            className={logLevelClass(log.level)}
-                          >
-                            {log.level.toUpperCase()}
-                          </Badge>
-                          <span className="min-w-0 flex-1 text-sm leading-snug">
-                            {log.message}
-                          </span>
+                  <FloatingScrollArea className="h-72 max-h-72 shrink-0 flex-none">
+                    <div className="space-y-3 pr-1 pb-1">
+                      {recentLogs.map((log, i) => (
+                        <div key={`${log.time}-${log.scope}-${log.action}-${i}`}>
+                          <div className="flex flex-wrap items-start gap-2 sm:gap-3">
+                            <span className="mt-0.5 shrink-0 text-xs tabular-nums text-muted-foreground">
+                              {log.time}
+                            </span>
+                            <Badge
+                              variant="outline"
+                              className="shrink-0 text-[10px] font-normal"
+                            >
+                              {logScopeLabel(log.scope)}
+                            </Badge>
+                            <Badge
+                              variant="secondary"
+                              className={logLevelClass(log.level)}
+                            >
+                              {log.level.toUpperCase()}
+                            </Badge>
+                            <span className="min-w-0 flex-1 text-sm leading-snug">
+                              {log.message}
+                            </span>
+                          </div>
+                          {i < recentLogs.length - 1 && (
+                            <Separator className="mt-3" />
+                          )}
                         </div>
-                        {i < recentLogs.length - 1 && (
-                          <Separator className="mt-3" />
-                        )}
-                      </div>
-                    ))}
-                  </div>
+                      ))}
+                    </div>
+                  </FloatingScrollArea>
                 )}
               </CardContent>
             </Card>

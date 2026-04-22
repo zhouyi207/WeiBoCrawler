@@ -107,6 +107,11 @@ pub async fn pause_task(state: State<'_, AppState>, id: String) -> Result<(), St
 }
 
 #[tauri::command]
+pub async fn reconcile_stale_running_tasks(state: State<'_, AppState>) -> Result<(), String> {
+    task_service::reconcile_stale_running_tasks_to_paused(&state.db).map_err(|e| e.to_string())
+}
+
+#[tauri::command]
 pub async fn restart_task(state: State<'_, AppState>, id: String) -> Result<(), String> {
     task_service::restart_task(&state.db, &state.queue_tx, &id).map_err(|e| e.to_string())
 }

@@ -374,7 +374,34 @@ export interface CrawledRecord {
   entityType?: string;
 }
 
-export type PageId = "home" | "crawl" | "account" | "ip" | "database";
+/** 后端 `logs` 表 / `list_request_logs` 单条。 */
+export interface RequestLogEntry {
+  id: number;
+  time: string;
+  platform: string;
+  taskId?: string | null;
+  taskName?: string | null;
+  crawlRequestId?: string | null;
+  accountId?: string | null;
+  accountName?: string | null;
+  proxyId?: string | null;
+  proxyAddress?: string | null;
+  requestKind: string;
+  phase?: string | null;
+  method: string;
+  url: string;
+  statusCode?: number | null;
+  durationMs: number;
+  errorMessage?: string | null;
+}
+
+export type PageId =
+  | "home"
+  | "crawl"
+  | "account"
+  | "ip"
+  | "database"
+  | "requestLogs";
 
 // ── Dashboard ────────────────────────────────────────────────────
 

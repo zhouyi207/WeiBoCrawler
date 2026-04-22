@@ -4,7 +4,19 @@
     <meta charset="UTF-8" />
     <link rel="icon" type="image/svg+xml" href="/vite.svg" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Tauri + React + Typescript</title>
+    <title>YssCrawler</title>
+    <!-- 首帧前同步主题，避免浅色闪屏；键名须与 src/app/theme.ts 的 THEME_STORAGE_KEY 一致 -->
+    <script>
+      (function () {
+        try {
+          var KEY = "ysscrawler-color-scheme";
+          var raw = localStorage.getItem(KEY);
+          var dark = raw === "dark";
+          document.documentElement.classList.toggle("dark", dark);
+          document.documentElement.style.colorScheme = dark ? "dark" : "light";
+        } catch (e) {}
+      })();
+    </script>
   </head>
 
   <body>
