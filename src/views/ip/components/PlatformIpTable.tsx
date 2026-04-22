@@ -53,33 +53,49 @@ export function PlatformIpTable({
     <Table>
       <TableHeader>
         <TableRow>
-          <TableHead>IP 地址</TableHead>
-          <TableHead className="hidden min-w-[140px] md:table-cell">
+          <TableHead className="whitespace-nowrap">IP 地址</TableHead>
+          <TableHead className="hidden min-w-[140px] whitespace-nowrap md:table-cell">
             最后一次响应时间
           </TableHead>
-          <TableHead className="hidden md:table-cell">最后一次响应的账号</TableHead>
-          <TableHead className="text-right">最后一次响应的延迟</TableHead>
-          <TableHead className="hidden md:table-cell">最后一次响应状态</TableHead>
-          <TableHead className="text-center">绑定账号数量</TableHead>
-          <TableHead className="text-center">运行账号数量</TableHead>
-          <TableHead className="text-center">状态</TableHead>
-          <TableHead className="text-center">风险系数</TableHead>
-          <TableHead className="w-[72px] text-center">操作</TableHead>
+          <TableHead className="hidden whitespace-nowrap md:table-cell">
+            最后一次响应的账号
+          </TableHead>
+          <TableHead className="whitespace-nowrap text-right">
+            最后一次响应的延迟
+          </TableHead>
+          <TableHead className="hidden whitespace-nowrap md:table-cell">
+            最后一次响应状态
+          </TableHead>
+          <TableHead className="whitespace-nowrap text-center">
+            绑定账号数量
+          </TableHead>
+          <TableHead className="whitespace-nowrap text-center">
+            运行账号数量
+          </TableHead>
+          <TableHead className="whitespace-nowrap text-center">状态</TableHead>
+          <TableHead className="whitespace-nowrap text-center">风险系数</TableHead>
+          <TableHead className="w-[72px] whitespace-nowrap text-center">
+            操作
+          </TableHead>
         </TableRow>
       </TableHeader>
       <TableBody>
         {loading && rows.length === 0 && (
           <TableRow>
-            <TableCell colSpan={10} className="py-12">
-              <div className="flex items-center justify-center">
-                <Loader2Icon className="size-6 animate-spin text-muted-foreground" />
-              </div>
+            <TableCell
+              colSpan={10}
+              className="text-muted-foreground h-24 text-center"
+            >
+              <Loader2Icon className="mx-auto size-6 animate-spin opacity-70" />
             </TableCell>
           </TableRow>
         )}
         {!loading && rows.length === 0 && (
           <TableRow>
-            <TableCell colSpan={10} className="py-6 text-center text-sm text-muted-foreground">
+            <TableCell
+              colSpan={10}
+              className="text-muted-foreground h-24 text-center"
+            >
               暂无 {PLATFORM_LABELS[platform]} 相关记录。
             </TableCell>
           </TableRow>

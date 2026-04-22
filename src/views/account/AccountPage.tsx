@@ -73,13 +73,15 @@ function AccountTableHeader() {
   return (
     <TableHeader>
       <TableRow>
-        <TableHead>用户名</TableHead>
-        <TableHead>微博 UID</TableHead>
-        <TableHead>绑定 IP</TableHead>
-        <TableHead>状态</TableHead>
-        <TableHead>添加时间</TableHead>
-        <TableHead>最后活跃时间</TableHead>
-        <TableHead className="w-[72px] text-center">操作</TableHead>
+        <TableHead className="whitespace-nowrap">用户名</TableHead>
+        <TableHead className="whitespace-nowrap">微博 UID</TableHead>
+        <TableHead className="whitespace-nowrap">绑定 IP</TableHead>
+        <TableHead className="whitespace-nowrap">状态</TableHead>
+        <TableHead className="whitespace-nowrap">添加时间</TableHead>
+        <TableHead className="whitespace-nowrap">最后活跃时间</TableHead>
+        <TableHead className="w-[72px] whitespace-nowrap text-center">
+          操作
+        </TableHead>
       </TableRow>
     </TableHeader>
   );
@@ -104,10 +106,11 @@ function PlatformAccountTable({
         <AccountTableHeader />
         <TableBody>
           <TableRow>
-            <TableCell colSpan={7} className="py-12">
-              <div className="flex items-center justify-center">
-                <Loader2Icon className="size-6 animate-spin text-muted-foreground" />
-              </div>
+            <TableCell
+              colSpan={7}
+              className="text-muted-foreground h-24 text-center"
+            >
+              <Loader2Icon className="mx-auto size-6 animate-spin opacity-70" />
             </TableCell>
           </TableRow>
         </TableBody>
@@ -117,9 +120,19 @@ function PlatformAccountTable({
 
   if (accounts.length === 0) {
     return (
-      <div className="flex h-32 items-center justify-center text-sm text-muted-foreground">
-        暂无 {PLATFORM_LABELS[platform]} 账号
-      </div>
+      <Table>
+        <AccountTableHeader />
+        <TableBody>
+          <TableRow>
+            <TableCell
+              colSpan={7}
+              className="text-muted-foreground h-24 text-center"
+            >
+              暂无 {PLATFORM_LABELS[platform]} 账号。使用上方「添加账号」入库。
+            </TableCell>
+          </TableRow>
+        </TableBody>
+      </Table>
     );
   }
 
@@ -149,10 +162,10 @@ function PlatformAccountTable({
                   {risk.label}
                 </Badge>
               </TableCell>
-              <TableCell className="text-xs text-muted-foreground">
+              <TableCell className="whitespace-nowrap text-xs text-muted-foreground">
                 {account.createdAt}
               </TableCell>
-              <TableCell className="text-xs text-muted-foreground">
+              <TableCell className="whitespace-nowrap text-xs text-muted-foreground">
                 {account.lastActiveAt}
               </TableCell>
               <TableCell className="text-center">
@@ -251,78 +264,97 @@ export function AccountPage() {
   }, [loadAccounts]);
 
   return (
-    <div className="flex min-h-0 flex-1 flex-col">
-      <FloatingScrollArea>
-        <div className="space-y-4 p-6">
-          <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-            <div className="min-w-0">
-              <h1 className="text-2xl font-bold tracking-tight">账号管理</h1>
-              <p className="text-sm text-muted-foreground">
-                按平台分类管理采集账号资源（数据来自本地数据库）
-              </p>
-            </div>
-            <div className="flex shrink-0 flex-wrap items-center justify-end gap-2">
-              <Button
-                variant="outline"
-                disabled={loading}
-                onClick={() => void loadAccounts()}
-              >
-                <RefreshCwIcon className="size-4" />
-                刷新
-              </Button>
-              <AddAccountDialog onAccountsChanged={loadAccounts} />
-            </div>
-          </div>
-
-          {error ? (
-            <Alert variant="destructive">
-              <AlertCircleIcon />
-              <AlertTitle>账号列表加载失败</AlertTitle>
-              <AlertDescription>{error}</AlertDescription>
-            </Alert>
-          ) : null}
-
-          <Tabs
-            value={activePlatform}
-            onValueChange={(v) => setActivePlatform(v as Platform)}
-          >
-            <TabsList>
-              {PLATFORMS.map((p) => {
-                const count = accounts.filter((a) => a.platform === p).length;
-                return (
-                  <TabsTrigger key={p} value={p}>
-                    {PLATFORM_LABELS[p]}
-                    <Badge variant="secondary" className="ml-1.5 text-[10px]">
-                      {count}
-                    </Badge>
-                  </TabsTrigger>
-                );
-              })}
-            </TabsList>
-
-            {PLATFORMS.map((p) => (
-              <TabsContent key={p} value={p}>
-                <Card>
-                  <CardHeader>
-                    <CardTitle className="text-base">
-                      {PLATFORM_LABELS[p]} 账号列表
-                    </CardTitle>
-                  </CardHeader>
-                  <CardContent>
-                    <PlatformAccountTable
-                      platform={p}
-                      accounts={accounts.filter((a) => a.platform === p)}
-                      loading={loading}
-                      onViewLog={setViewingLog}
-                      onDelete={setDeleting}
-                    />
-                  </CardContent>
-                </Card>
-              </TabsContent>
-            ))}
-          </Tabs>
+    <div className="flex min-h-0 flex-1 flex-col gap-4 overflow-hidden p-4">
+      <div className="flex shrink-0 flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+        <div className="min-w-0">
+          <h1 className="text-2xl font-bold tracking-tight">账号管理</h1>
+          <p className="text-sm text-muted-foreground">
+            按平台分类管理采集账号资源（数据来自本地数据库）
+          </p>
         </div>
-      </FloatingScrollArea>
+        <div className="flex shrink-0 flex-wrap items-center justify-end gap-2">
+          <Button
+            variant="outline"
+            size="sm"
+            className="gap-1.5"
+            disabled={loading}
+            onClick={() => void loadAccounts()}
+          >
+            {loading ? (
+              <Loader2Icon className="size-4 animate-spin" />
+            ) : (
+              <RefreshCwIcon className="size-4" />
+            )}
+            刷新
+          </Button>
+          <AddAccountDialog onAccountsChanged={loadAccounts} />
+        </div>
+      </div>
+
+      {error ? (
+        <Alert variant="destructive" className="shrink-0">
+          <AlertCircleIcon />
+          <AlertTitle>账号列表加载失败</AlertTitle>
+          <AlertDescription>{error}</AlertDescription>
+        </Alert>
+      ) : null}
+
+      <Tabs
+        value={activePlatform}
+        onValueChange={(v) => setActivePlatform(v as Platform)}
+        className="min-h-0 flex flex-1 flex-col gap-2 overflow-hidden"
+      >
+        <TabsList className="shrink-0">
+          {PLATFORMS.map((p) => {
+            const count = accounts.filter((a) => a.platform === p).length;
+            return (
+              <TabsTrigger key={p} value={p}>
+                {PLATFORM_LABELS[p]}
+                <Badge variant="secondary" className="ml-1.5 text-[10px]">
+                  {count}
+                </Badge>
+              </TabsTrigger>
+            );
+          })}
+        </TabsList>
+
+        {PLATFORMS.map((p) => {
+          const platformAccounts = accounts.filter((a) => a.platform === p);
+          return (
+            <TabsContent
+              key={p}
+              value={p}
+              className="mt-0 flex min-h-0 flex-1 flex-col overflow-hidden"
+            >
+              <Card className="flex min-h-0 flex-1 flex-col overflow-hidden">
+                <CardHeader className="flex shrink-0 flex-row flex-wrap items-center justify-between gap-2 space-y-0 pb-3">
+                  <CardTitle className="flex h-7 min-w-0 items-center text-base leading-7">
+                    {PLATFORM_LABELS[p]} 账号列表
+                  </CardTitle>
+                  <div className="flex flex-wrap items-center justify-end gap-2">
+                    <span className="text-muted-foreground text-xs">
+                      共 {platformAccounts.length} 条
+                    </span>
+                  </div>
+                </CardHeader>
+                <CardContent className="flex min-h-0 flex-1 flex-col overflow-hidden pt-0">
+                  <FloatingScrollArea className="min-h-0 flex-1">
+                    <div className="overflow-x-auto pr-2">
+                      <PlatformAccountTable
+                        platform={p}
+                        accounts={platformAccounts}
+                        loading={loading}
+                        onViewLog={setViewingLog}
+                        onDelete={setDeleting}
+                      />
+                    </div>
+                  </FloatingScrollArea>
+                </CardContent>
+              </Card>
+            </TabsContent>
+          );
+        })}
+      </Tabs>
 
       <AccountLogModal
         open={viewingLog != null}

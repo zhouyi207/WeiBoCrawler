@@ -57,30 +57,46 @@ export function GlobalIpTable({
     <Table>
       <TableHeader>
         <TableRow>
-          <TableHead>IP 地址</TableHead>
-          <TableHead>代理类型</TableHead>
-          <TableHead className="w-[88px] text-center">状态</TableHead>
-          <TableHead className="hidden min-w-[160px] md:table-cell">实际位置</TableHead>
-          <TableHead className="text-right">响应延迟(国内)</TableHead>
-          <TableHead className="text-right">响应延迟(国外)</TableHead>
-          <TableHead className="hidden min-w-[120px] xl:table-cell">IP 备注</TableHead>
-          <TableHead className="w-[72px] text-center">操作</TableHead>
+          <TableHead className="whitespace-nowrap">IP 地址</TableHead>
+          <TableHead className="whitespace-nowrap">代理类型</TableHead>
+          <TableHead className="w-[88px] whitespace-nowrap text-center">
+            状态
+          </TableHead>
+          <TableHead className="hidden min-w-[160px] whitespace-nowrap md:table-cell">
+            实际位置
+          </TableHead>
+          <TableHead className="whitespace-nowrap text-right">
+            响应延迟(国内)
+          </TableHead>
+          <TableHead className="whitespace-nowrap text-right">
+            响应延迟(国外)
+          </TableHead>
+          <TableHead className="hidden min-w-[120px] whitespace-nowrap xl:table-cell">
+            IP 备注
+          </TableHead>
+          <TableHead className="w-[72px] whitespace-nowrap text-center">
+            操作
+          </TableHead>
         </TableRow>
       </TableHeader>
       <TableBody>
         {loading && rows.length === 0 && (
           <TableRow>
-            <TableCell colSpan={8} className="py-12">
-              <div className="flex items-center justify-center">
-                <Loader2Icon className="size-6 animate-spin text-muted-foreground" />
-              </div>
+            <TableCell
+              colSpan={8}
+              className="text-muted-foreground h-24 text-center"
+            >
+              <Loader2Icon className="mx-auto size-6 animate-spin opacity-70" />
             </TableCell>
           </TableRow>
         )}
         {!loading && rows.length === 0 && (
           <TableRow>
-            <TableCell colSpan={8} className="py-6 text-center text-sm text-muted-foreground">
-              暂无代理记录。
+            <TableCell
+              colSpan={8}
+              className="text-muted-foreground h-24 text-center"
+            >
+              暂无代理记录。使用上方「添加代理」入库。
             </TableCell>
           </TableRow>
         )}

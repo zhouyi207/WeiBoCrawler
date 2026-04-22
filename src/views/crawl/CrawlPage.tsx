@@ -47,6 +47,10 @@ import {
   type CrawlTask,
 } from "@/features/domain/types";
 import {
+  resolveTaskDisplayStatus,
+  TASK_STATUS_BADGE_VARIANT,
+} from "@/features/domain/taskDisplayStatus";
+import {
   deleteTask,
   listTasks,
   pauseTask,
@@ -69,14 +73,6 @@ const STRATEGY_LABELS: Record<string, string> = {
   round_robin: "轮询",
   random: "随机",
 };
-
-const STATUS_VARIANT: Record<string, "default" | "secondary" | "destructive" | "outline"> =
-  {
-    running: "default",
-    paused: "secondary",
-    completed: "outline",
-    error: "destructive",
-  };
 
 /** 与后端 `CrawlProgressEvent`（camelCase）一致 */
 interface CrawlProgressPayload {
@@ -370,103 +366,114 @@ export function CrawlPage() {
   }
 
   return (
-    <div className="relative flex min-h-0 flex-1 flex-col">
-      <FloatingScrollArea>
-        <div className="space-y-4 p-6">
-          <div className="space-y-3">
-            {/* 与 `IpPageHeader`、账号页顶栏同一套：标题左、工具右，`sm` 起单行并与标题块垂直居中 */}
-            <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-              <div className="min-w-0">
-                <h1 className="text-2xl font-bold tracking-tight">采集管理</h1>
-                <p className="text-sm text-muted-foreground">
-                  按平台分类查看任务；启动采集后会自动展开日志（本地持久化）。点击行可展开/收起。
-                </p>
-              </div>
-              <div className="flex shrink-0 flex-wrap items-center justify-end gap-2">
-                <Button
-                  type="button"
-                  variant="outline"
-                  disabled={!hasAnyTaskLogs}
-                  onClick={() => confirmClearAllTaskLogs()}
-                  title="清空所有任务在本地保存的采集日志"
-                >
-                  <EraserIcon className="size-4" />
-                  清空全部日志
-                </Button>
-                <Button
-                  type="button"
-                  variant="outline"
-                  onClick={() => setBackoffSettingsOpen(true)}
-                  title="各平台 Worker 连续失败后的熔断退避秒数"
-                >
-                  <Settings2Icon className="size-4" />
-                  采集熔断退避（秒）
-                </Button>
-              </div>
-            </div>
-          </div>
-
-          {loadError && (
-            <Alert variant="destructive">
-              <AlertCircleIcon />
-              <AlertTitle>加载任务列表失败</AlertTitle>
-              <AlertDescription>{loadError}</AlertDescription>
-            </Alert>
-          )}
-
-          <Tabs
-            value={activePlatform}
-            onValueChange={(v) => setActivePlatform(v as Platform)}
+    <div className="flex min-h-0 flex-1 flex-col gap-4 overflow-hidden p-4">
+      <div className="flex shrink-0 flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+        <div className="min-w-0">
+          <h1 className="text-2xl font-bold tracking-tight">采集管理</h1>
+          <p className="text-sm text-muted-foreground">
+            按平台分类查看任务；启动采集后会自动展开日志（本地持久化）。点击行可展开/收起。
+          </p>
+        </div>
+        <div className="flex shrink-0 flex-wrap items-center justify-end gap-2">
+          <Button
+            type="button"
+            variant="outline"
+            size="sm"
+            className="gap-1.5"
+            disabled={!hasAnyTaskLogs}
+            onClick={() => confirmClearAllTaskLogs()}
+            title="清空所有任务在本地保存的采集日志"
           >
-            <TabsList>
-              {PLATFORMS.map((p) => {
-                const count = sortedTasks.filter((t) => t.platform === p).length;
-                return (
-                  <TabsTrigger key={p} value={p}>
-                    {PLATFORM_LABELS[p]}
-                    <Badge variant="secondary" className="ml-1.5 text-[10px]">
-                      {count}
-                    </Badge>
-                  </TabsTrigger>
-                );
-              })}
-            </TabsList>
+            <EraserIcon className="size-4" />
+            清空全部日志
+          </Button>
+          <Button
+            type="button"
+            variant="outline"
+            size="sm"
+            className="gap-1.5"
+            onClick={() => setBackoffSettingsOpen(true)}
+            title="各平台 Worker 连续失败后的熔断退避秒数"
+          >
+            <Settings2Icon className="size-4" />
+            采集熔断退避（秒）
+          </Button>
+        </div>
+      </div>
 
-            {PLATFORMS.map((p) => {
-              const platformTasks = sortedTasks.filter((t) => t.platform === p);
-              const hasLogsOnThisTab = platformTasks.some(
-                (t) => (taskLogs[t.id] ?? []).length > 0
-              );
-              return (
-                <TabsContent key={p} value={p}>
-                  <Card>
-                    <CardHeader className="flex flex-row flex-wrap items-center justify-between gap-2 space-y-0">
-                      <CardTitle className="text-base">
-                        {PLATFORM_LABELS[p]} 采集任务
-                      </CardTitle>
-                      <div className="flex shrink-0 flex-wrap items-center justify-end gap-2">
-                        <Button
-                          type="button"
-                          variant="outline"
-                          className="shrink-0"
-                          disabled={!hasLogsOnThisTab}
-                          onClick={() => clearLogsForPlatformTab(p)}
-                          title="清空当前平台下所有任务的本地采集日志"
-                        >
-                          <EraserIcon className="size-4" />
-                          清空本页日志
-                        </Button>
-                        <Button
-                          type="button"
-                          className="shrink-0"
-                          onClick={() => openCreate(p)}
-                        >
-                          <PlusIcon className="size-4" />
-                          新建采集任务
-                        </Button>
-                      </div>
-                    </CardHeader>
-                    <CardContent className="p-0">
+      {loadError ? (
+        <Alert variant="destructive" className="shrink-0">
+          <AlertCircleIcon />
+          <AlertTitle>加载任务列表失败</AlertTitle>
+          <AlertDescription>{loadError}</AlertDescription>
+        </Alert>
+      ) : null}
+
+      <Tabs
+        value={activePlatform}
+        onValueChange={(v) => setActivePlatform(v as Platform)}
+        className="min-h-0 flex flex-1 flex-col gap-2 overflow-hidden"
+      >
+        <TabsList className="shrink-0">
+          {PLATFORMS.map((p) => {
+            const count = sortedTasks.filter((t) => t.platform === p).length;
+            return (
+              <TabsTrigger key={p} value={p}>
+                {PLATFORM_LABELS[p]}
+                <Badge variant="secondary" className="ml-1.5 text-[10px]">
+                  {count}
+                </Badge>
+              </TabsTrigger>
+            );
+          })}
+        </TabsList>
+
+        {PLATFORMS.map((p) => {
+          const platformTasks = sortedTasks.filter((t) => t.platform === p);
+          const hasLogsOnThisTab = platformTasks.some(
+            (t) => (taskLogs[t.id] ?? []).length > 0
+          );
+          return (
+            <TabsContent
+              key={p}
+              value={p}
+              className="mt-0 flex min-h-0 flex-1 flex-col overflow-hidden"
+            >
+              <Card className="flex min-h-0 flex-1 flex-col overflow-hidden">
+                <CardHeader className="flex shrink-0 flex-row flex-wrap items-center justify-between gap-2 space-y-0 pb-3">
+                  <CardTitle className="flex h-7 min-w-0 items-center text-base leading-7">
+                    {PLATFORM_LABELS[p]} 采集任务
+                  </CardTitle>
+                  <div className="flex flex-wrap items-center justify-end gap-2">
+                    <span className="text-muted-foreground text-xs">
+                      共 {platformTasks.length} 条
+                    </span>
+                    <Button
+                      type="button"
+                      variant="outline"
+                      size="sm"
+                      className="shrink-0 gap-1.5"
+                      disabled={!hasLogsOnThisTab}
+                      onClick={() => clearLogsForPlatformTab(p)}
+                      title="清空当前平台下所有任务的本地采集日志"
+                    >
+                      <EraserIcon className="size-4" />
+                      清空本页日志
+                    </Button>
+                    <Button
+                      type="button"
+                      size="sm"
+                      className="shrink-0 gap-1.5"
+                      onClick={() => openCreate(p)}
+                    >
+                      <PlusIcon className="size-4" />
+                      新建采集任务
+                    </Button>
+                  </div>
+                </CardHeader>
+                <CardContent className="flex min-h-0 flex-1 flex-col overflow-hidden pt-0">
+                  <FloatingScrollArea className="min-h-0 flex-1">
+                    <div className="overflow-x-auto pr-2">
                       <Table className="table-fixed">
                         <colgroup>
                           <col />
@@ -480,36 +487,47 @@ export function CrawlPage() {
                         </colgroup>
                         <TableHeader>
                           <TableRow>
-                            <TableHead>任务名称</TableHead>
-                            <TableHead>类型</TableHead>
-                            <TableHead>采集策略</TableHead>
-                            <TableHead className="text-center">速率</TableHead>
-                            <TableHead className="text-center">账号池</TableHead>
-                            <TableHead className="text-center">IP池</TableHead>
+                            <TableHead className="whitespace-nowrap">
+                              任务名称
+                            </TableHead>
+                            <TableHead className="whitespace-nowrap">类型</TableHead>
+                            <TableHead className="whitespace-nowrap">采集策略</TableHead>
+                            <TableHead className="whitespace-nowrap text-center">
+                              速率
+                            </TableHead>
+                            <TableHead className="whitespace-nowrap text-center">
+                              账号池
+                            </TableHead>
+                            <TableHead className="whitespace-nowrap text-center">
+                              IP池
+                            </TableHead>
                             <TableHead
-                              className="text-center"
+                              className="whitespace-nowrap text-center"
                               title="账号数 × 代理数 = 最大并发 worker 数"
                             >
                               并发
                             </TableHead>
-                            <TableHead>状态</TableHead>
-                            <TableHead className="text-right">操作</TableHead>
+                            <TableHead className="whitespace-nowrap">状态</TableHead>
+                            <TableHead className="whitespace-nowrap text-right">
+                              操作
+                            </TableHead>
                           </TableRow>
                         </TableHeader>
                         <TableBody>
                           {loading && platformTasks.length === 0 ? (
                             <TableRow>
-                              <TableCell colSpan={9} className="py-12">
-                                <div className="flex items-center justify-center">
-                                  <Loader2Icon className="size-6 animate-spin text-muted-foreground" />
-                                </div>
+                              <TableCell
+                                colSpan={9}
+                                className="text-muted-foreground h-24 text-center"
+                              >
+                                <Loader2Icon className="mx-auto size-6 animate-spin opacity-70" />
                               </TableCell>
                             </TableRow>
                           ) : platformTasks.length === 0 ? (
                             <TableRow>
                               <TableCell
                                 colSpan={9}
-                                className="h-28 text-center text-muted-foreground"
+                                className="text-muted-foreground h-24 text-center"
                               >
                                 暂无 {PLATFORM_LABELS[p]} 采集任务，点击「新建采集任务」。
                               </TableCell>
@@ -518,6 +536,10 @@ export function CrawlPage() {
                             platformTasks.map((task) => {
                               const expanded = expandedIds.has(task.id);
                               const logs = taskLogs[task.id] ?? [];
+                              const displayStatus = resolveTaskDisplayStatus(
+                                task,
+                                progressMap[task.id],
+                              );
                               return (
                                 <Fragment key={task.id}>
                                   <TableRow
@@ -567,8 +589,10 @@ export function CrawlPage() {
                                         )}
                                     </TableCell>
                                     <TableCell>
-                                      <Badge variant={STATUS_VARIANT[task.status]}>
-                                        {TASK_STATUS_LABELS[task.status]}
+                                      <Badge
+                                        variant={TASK_STATUS_BADGE_VARIANT[displayStatus]}
+                                      >
+                                        {TASK_STATUS_LABELS[displayStatus]}
                                       </Badge>
                                     </TableCell>
                                     <TableCell className="text-right">
@@ -784,14 +808,14 @@ export function CrawlPage() {
                           )}
                         </TableBody>
                       </Table>
-                    </CardContent>
-                  </Card>
-                </TabsContent>
-              );
-            })}
-          </Tabs>
-        </div>
-      </FloatingScrollArea>
+                    </div>
+                  </FloatingScrollArea>
+                </CardContent>
+              </Card>
+            </TabsContent>
+          );
+        })}
+      </Tabs>
 
       <CreateTaskModal
         open={createOpen}

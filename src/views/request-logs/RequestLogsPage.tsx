@@ -126,8 +126,10 @@ export function RequestLogsPage() {
       </AlertDialog>
 
       <Card className="flex min-h-0 flex-1 flex-col overflow-hidden">
-        <CardHeader className="flex shrink-0 flex-row flex-wrap items-center justify-between gap-2 space-y-0 pb-4">
-          <CardTitle className="text-base">网络请求记录</CardTitle>
+        <CardHeader className="flex shrink-0 flex-row flex-wrap items-center justify-between gap-2 space-y-0 pb-3">
+          <CardTitle className="flex h-7 min-w-0 items-center text-base leading-7">
+            网络请求记录
+          </CardTitle>
           <div className="flex flex-wrap items-center justify-end gap-2">
             <span className="text-muted-foreground text-xs">
               共 {total} 条 · 超出上限时自动丢弃最旧批次

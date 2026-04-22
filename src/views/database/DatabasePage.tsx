@@ -390,42 +390,45 @@ export function DatabasePage() {
   };
 
   return (
-    <div className="flex min-h-0 flex-1 flex-col">
-      <FloatingScrollArea>
-        <div className="space-y-4 p-6">
-          <div className="flex items-center justify-between">
-            <div>
-              <h1 className="text-2xl font-bold tracking-tight">数据管理</h1>
-              <p className="text-sm text-muted-foreground">
-                采集数据的统一存储、查询与导出
-              </p>
-            </div>
-            <div className="flex flex-wrap gap-2">
-              <Button
-                variant="outline"
-                size="sm"
-                onClick={() => {
-                  void loadRecordTaskNames();
-                  void fetchRecords();
-                }}
-                disabled={loading}
-              >
-                <RefreshCwIcon className={`size-4 ${loading ? "animate-spin" : ""}`} />
-                刷新
-              </Button>
-            </div>
-          </div>
+    <div className="flex min-h-0 flex-1 flex-col gap-4 p-4">
+      <div className="flex shrink-0 flex-wrap items-start justify-between gap-3">
+        <div>
+          <h1 className="text-2xl font-bold tracking-tight">数据管理</h1>
+          <p className="text-sm text-muted-foreground">
+            采集数据的统一存储、查询与导出
+          </p>
+        </div>
+        <div className="flex flex-wrap gap-2">
+          <Button
+            variant="outline"
+            size="sm"
+            className="gap-1.5"
+            onClick={() => {
+              void loadRecordTaskNames();
+              void fetchRecords();
+            }}
+            disabled={loading}
+          >
+            {loading ? (
+              <Loader2Icon className="size-4 animate-spin" />
+            ) : (
+              <RefreshCwIcon className="size-4" />
+            )}
+            刷新
+          </Button>
+        </div>
+      </div>
 
-          {/* Filters */}
-          <Card>
-            <CardHeader>
-              <CardTitle className="flex items-center gap-2 text-base">
-                <FilterIcon className="size-4" />
-                筛选条件
-              </CardTitle>
-            </CardHeader>
-            <CardContent>
-              <div className="flex flex-wrap items-center gap-3">
+      {/* Filters */}
+      <Card className="shrink-0">
+        <CardHeader>
+          <CardTitle className="flex items-center gap-2 text-base">
+            <FilterIcon className="size-4" />
+            筛选条件
+          </CardTitle>
+        </CardHeader>
+        <CardContent>
+          <div className="flex flex-wrap items-center gap-3">
                 <Select
                   value={platformFilter}
                   onValueChange={(v) => {
@@ -502,206 +505,222 @@ export function DatabasePage() {
             </CardContent>
           </Card>
 
-          {/* Data Table */}
-          <Card>
-            <CardHeader className="flex flex-row flex-wrap items-center justify-between gap-3 space-y-0 pb-4">
-              <CardTitle className="text-base">
-                数据列表
-                <Badge variant="secondary" className="ml-2">
-                  {total} 条
-                </Badge>
-              </CardTitle>
-              <div className="flex shrink-0 flex-wrap justify-end gap-2">
-                <Button
-                  variant="outline"
-                  size="sm"
-                  className="text-destructive hover:bg-destructive/10 hover:text-destructive"
-                  onClick={() => setDeleteDialogOpen(true)}
-                  disabled={
-                    loading ||
-                    deduping ||
-                    exporting ||
-                    deletingFiltered ||
-                    total === 0
-                  }
-                >
-                  <Trash2Icon
-                    className={`size-4 ${deletingFiltered ? "animate-pulse" : ""}`}
-                  />
-                  删除当前数据
-                </Button>
-                <Button
-                  variant="outline"
-                  size="sm"
-                  className="text-destructive hover:bg-destructive/10 hover:text-destructive"
-                  onClick={handleDeduplicate}
-                  disabled={deduping || loading || deletingFiltered}
-                >
-                  <Trash2Icon
-                    className={`size-4 ${deduping ? "animate-pulse" : ""}`}
-                  />
-                  清除重复
-                </Button>
-                <Button
-                  variant="outline"
-                  size="sm"
-                  onClick={handleExportJson}
-                  disabled={exporting || loading || deletingFiltered}
-                >
-                  <BracesIcon className="size-4" />
-                  导出 JSON
-                </Button>
-                <TooltipProvider delayDuration={300}>
-                  <Tooltip>
-                    <TooltipTrigger asChild>
-                      <span className="inline-flex">
-                        <Button
-                          variant="outline"
-                          size="sm"
-                          onClick={handleExportExcel}
-                          disabled={exporting || loading || deletingFiltered}
-                        >
-                          <DownloadIcon className="size-4" />
-                          导出 Excel
-                        </Button>
-                      </span>
-                    </TooltipTrigger>
-                    <TooltipContent
-                      side="bottom"
-                      align="end"
-                      className="max-w-[20rem] text-left text-xs leading-relaxed"
+      {/* Data Table — 布局与「请求日志」网络请求记录一致：Card 撑满剩余高度 + FloatingScrollArea 包表 */}
+      <Card className="flex min-h-0 flex-1 flex-col overflow-hidden">
+        <CardHeader className="flex shrink-0 flex-row flex-wrap items-center justify-between gap-2 space-y-0 pb-3">
+          <CardTitle className="flex h-7 min-w-0 items-center text-base leading-7">
+            数据列表
+          </CardTitle>
+          <div className="flex flex-wrap items-center justify-end gap-2">
+            <span className="text-muted-foreground text-xs">
+              共 {total} 条
+              {total > 0
+                ? ` · 本页 ${(page - 1) * PAGE_SIZE + 1}–${Math.min(page * PAGE_SIZE, total)}`
+                : ""}
+            </span>
+            <Button
+              variant="outline"
+              size="sm"
+              className="gap-1.5 text-destructive hover:bg-destructive/10 hover:text-destructive"
+              onClick={() => setDeleteDialogOpen(true)}
+              disabled={
+                loading ||
+                deduping ||
+                exporting ||
+                deletingFiltered ||
+                total === 0
+              }
+            >
+              <Trash2Icon
+                className={`size-4 ${deletingFiltered ? "animate-pulse" : ""}`}
+              />
+              删除当前数据
+            </Button>
+            <Button
+              variant="outline"
+              size="sm"
+              className="gap-1.5 text-destructive hover:bg-destructive/10 hover:text-destructive"
+              onClick={handleDeduplicate}
+              disabled={deduping || loading || deletingFiltered}
+            >
+              <Trash2Icon
+                className={`size-4 ${deduping ? "animate-pulse" : ""}`}
+              />
+              清除重复
+            </Button>
+            <Button
+              variant="outline"
+              size="sm"
+              className="gap-1.5"
+              onClick={handleExportJson}
+              disabled={exporting || loading || deletingFiltered}
+            >
+              <BracesIcon className="size-4" />
+              导出 JSON
+            </Button>
+            <TooltipProvider delayDuration={300}>
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  <span className="inline-flex">
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      className="gap-1.5"
+                      onClick={handleExportExcel}
+                      disabled={exporting || loading || deletingFiltered}
                     >
-                      Excel 单格约 3.2 万字符上限，内容预览与 jsonData 等长字段可能被截断。需要完整文本或大体量数据时，请使用「导出 JSON」。
-                    </TooltipContent>
-                  </Tooltip>
-                </TooltipProvider>
-              </div>
-            </CardHeader>
-            <CardContent>
-              {loading ? (
-                <div className="flex items-center justify-center py-12">
-                  <Loader2Icon className="size-6 animate-spin text-muted-foreground" />
-                </div>
-              ) : records.length === 0 ? (
-                <div className="py-12 text-center text-sm text-muted-foreground">
-                  暂无数据
-                </div>
-              ) : (
-                <TooltipProvider delayDuration={200}>
-                  <Table>
+                      <DownloadIcon className="size-4" />
+                      导出 Excel
+                    </Button>
+                  </span>
+                </TooltipTrigger>
+                <TooltipContent
+                  side="bottom"
+                  align="end"
+                  className="max-w-[20rem] text-left text-xs leading-relaxed"
+                >
+                  Excel 单格约 3.2 万字符上限，内容预览与 jsonData 等长字段可能被截断。需要完整文本或大体量数据时，请使用「导出 JSON」。
+                </TooltipContent>
+              </Tooltip>
+            </TooltipProvider>
+          </div>
+        </CardHeader>
+        <CardContent className="flex min-h-0 flex-1 flex-col overflow-hidden pt-0">
+          <FloatingScrollArea className="min-h-0 flex-1">
+            <div className="overflow-x-auto pr-2">
+              <TooltipProvider delayDuration={200}>
+                <Table>
                   <TableHeader>
                     <TableRow>
-                      <TableHead>平台</TableHead>
-                      <TableHead>任务</TableHead>
-                      <TableHead>类型</TableHead>
-                      <TableHead>关键词</TableHead>
-                      <TableHead>作者</TableHead>
-                      <TableHead className="max-w-[320px] min-w-[200px]">
+                      <TableHead className="whitespace-nowrap">平台</TableHead>
+                      <TableHead className="whitespace-nowrap">任务</TableHead>
+                      <TableHead className="whitespace-nowrap">类型</TableHead>
+                      <TableHead className="whitespace-nowrap">关键词</TableHead>
+                      <TableHead className="whitespace-nowrap">作者</TableHead>
+                      <TableHead className="min-w-[200px] max-w-[320px]">
                         内容预览
                       </TableHead>
-                      <TableHead>采集时间</TableHead>
-                      <TableHead className="w-16 text-center">其他</TableHead>
+                      <TableHead className="whitespace-nowrap">采集时间</TableHead>
+                      <TableHead className="w-16 whitespace-nowrap text-center">
+                        其他
+                      </TableHead>
                     </TableRow>
                   </TableHeader>
                   <TableBody>
-                    {records.map((record) => (
-                      <TableRow key={record.id}>
-                        <TableCell>
-                          <Badge variant="outline">
-                            {PLATFORM_LABELS[record.platform]}
-                          </Badge>
-                        </TableCell>
-                        <TableCell className="max-w-[180px] truncate text-xs">
-                          {record.taskName}
-                        </TableCell>
-                        <TableCell>
-                          {record.entityType && (
-                            <span className="text-xs text-muted-foreground">
-                              {ENTITY_LABELS[record.entityType] ??
-                                record.entityType}
-                            </span>
-                          )}
-                        </TableCell>
-                        <TableCell className="max-w-[140px]">
-                          <RecordKeywordCell record={record} />
-                        </TableCell>
-                        <TableCell className="max-w-[120px] text-sm">
-                          <RecordAuthorLinkCell record={record} />
-                        </TableCell>
-                        <TableCell className="max-w-[320px] py-2">
-                          <RecordContentPreviewCell record={record} />
-                        </TableCell>
-                        <TableCell className="whitespace-nowrap text-xs text-muted-foreground">
-                          {record.crawledAt}
-                        </TableCell>
-                        <TableCell className="text-center">
-                          <span
-                            className="cursor-default text-muted-foreground"
-                            title="另含 jsonData 等；可导出 JSON（完整）或 Excel 查看"
-                          >
-                            ...
-                          </span>
+                    {loading && records.length === 0 ? (
+                      <TableRow>
+                        <TableCell
+                          colSpan={8}
+                          className="text-muted-foreground h-24 text-center"
+                        >
+                          <Loader2Icon className="mx-auto size-6 animate-spin opacity-70" />
                         </TableCell>
                       </TableRow>
-                    ))}
+                    ) : records.length === 0 ? (
+                      <TableRow>
+                        <TableCell
+                          colSpan={8}
+                          className="text-muted-foreground h-24 text-center"
+                        >
+                          暂无数据。调整筛选条件或开始采集后将显示在此。
+                        </TableCell>
+                      </TableRow>
+                    ) : (
+                      records.map((record) => (
+                        <TableRow key={record.id}>
+                          <TableCell className="whitespace-nowrap">
+                            <Badge variant="outline" className="text-xs">
+                              {PLATFORM_LABELS[record.platform]}
+                            </Badge>
+                          </TableCell>
+                          <TableCell className="max-w-[180px] truncate text-xs">
+                            {record.taskName}
+                          </TableCell>
+                          <TableCell className="text-xs">
+                            {record.entityType ? (
+                              <span className="text-muted-foreground">
+                                {ENTITY_LABELS[record.entityType] ??
+                                  record.entityType}
+                              </span>
+                            ) : (
+                              "—"
+                            )}
+                          </TableCell>
+                          <TableCell className="max-w-[140px]">
+                            <RecordKeywordCell record={record} />
+                          </TableCell>
+                          <TableCell className="max-w-[120px] text-xs">
+                            <RecordAuthorLinkCell record={record} />
+                          </TableCell>
+                          <TableCell className="max-w-[320px] py-2">
+                            <RecordContentPreviewCell record={record} />
+                          </TableCell>
+                          <TableCell className="whitespace-nowrap font-mono text-xs text-muted-foreground">
+                            {record.crawledAt}
+                          </TableCell>
+                          <TableCell className="text-center">
+                            <span
+                              className="cursor-default text-xs text-muted-foreground"
+                              title="另含 jsonData 等；可导出 JSON（完整）或 Excel 查看"
+                            >
+                              …
+                            </span>
+                          </TableCell>
+                        </TableRow>
+                      ))
+                    )}
                   </TableBody>
                 </Table>
-                </TooltipProvider>
-              )}
-
-              {/* Pagination */}
-              {total > 0 && (
-                <div className="flex items-center justify-between border-t pt-4 mt-4">
-                  <p className="text-sm text-muted-foreground">
-                    第 {(page - 1) * PAGE_SIZE + 1}–{Math.min(page * PAGE_SIZE, total)} 条，共 {total} 条
-                  </p>
-                  <div className="flex items-center gap-1">
-                    <Button
-                      variant="outline"
-                      size="icon"
-                      className="size-8"
-                      disabled={page <= 1}
-                      onClick={() => setPage(1)}
-                    >
-                      <ChevronsLeftIcon className="size-4" />
-                    </Button>
-                    <Button
-                      variant="outline"
-                      size="icon"
-                      className="size-8"
-                      disabled={page <= 1}
-                      onClick={() => setPage((p) => Math.max(1, p - 1))}
-                    >
-                      <ChevronLeftIcon className="size-4" />
-                    </Button>
-                    <span className="px-3 text-sm">
-                      {page} / {totalPages}
-                    </span>
-                    <Button
-                      variant="outline"
-                      size="icon"
-                      className="size-8"
-                      disabled={page >= totalPages}
-                      onClick={() => setPage((p) => Math.min(totalPages, p + 1))}
-                    >
-                      <ChevronRightIcon className="size-4" />
-                    </Button>
-                    <Button
-                      variant="outline"
-                      size="icon"
-                      className="size-8"
-                      disabled={page >= totalPages}
-                      onClick={() => setPage(totalPages)}
-                    >
-                      <ChevronsRightIcon className="size-4" />
-                    </Button>
-                  </div>
-                </div>
-              )}
-            </CardContent>
-          </Card>
-        </div>
-      </FloatingScrollArea>
+              </TooltipProvider>
+            </div>
+          </FloatingScrollArea>
+          <div className="mt-4 flex shrink-0 flex-wrap items-center justify-end gap-2 border-t pt-4">
+            <span className="text-muted-foreground mr-auto text-xs">
+              第 {page} / {totalPages} 页
+            </span>
+            <Button
+              type="button"
+              variant="outline"
+              size="icon"
+              className="size-8"
+              disabled={loading || page <= 1}
+              onClick={() => setPage(1)}
+            >
+              <ChevronsLeftIcon className="size-4" />
+            </Button>
+            <Button
+              type="button"
+              variant="outline"
+              size="icon"
+              className="size-8"
+              disabled={loading || page <= 1}
+              onClick={() => setPage((p) => Math.max(1, p - 1))}
+            >
+              <ChevronLeftIcon className="size-4" />
+            </Button>
+            <Button
+              type="button"
+              variant="outline"
+              size="icon"
+              className="size-8"
+              disabled={loading || page >= totalPages}
+              onClick={() => setPage((p) => Math.min(totalPages, p + 1))}
+            >
+              <ChevronRightIcon className="size-4" />
+            </Button>
+            <Button
+              type="button"
+              variant="outline"
+              size="icon"
+              className="size-8"
+              disabled={loading || page >= totalPages}
+              onClick={() => setPage(totalPages)}
+            >
+              <ChevronsRightIcon className="size-4" />
+            </Button>
+          </div>
+        </CardContent>
+      </Card>
 
       <AlertDialog open={deleteDialogOpen} onOpenChange={setDeleteDialogOpen}>
         <AlertDialogContent>

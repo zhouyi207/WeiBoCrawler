@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useRef, useState } from "react";
-import { AlertCircleIcon, ShieldIcon } from "lucide-react";
+import { AlertCircleIcon } from "lucide-react";
 import { toast } from "sonner";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
@@ -255,48 +255,58 @@ export function IpPage() {
     refreshing || (activeTab === "global" ? loadingGlobal : loadingPlatform);
 
   return (
-    <div className="flex min-h-0 flex-1 flex-col">
-      <FloatingScrollArea>
-        <div className="space-y-4 p-6">
-          <IpPageHeader
-            activeTabIsGlobal={activeTab === "global"}
-            refreshing={refreshing}
-            refreshDisabled={refreshDisabled}
-            onOpenProbeSettings={() => setProbeSettingsOpen(true)}
-            onRefresh={() => void handleRefresh()}
-            onAdd={() => setAddOpen(true)}
-          />
+    <div className="flex min-h-0 flex-1 flex-col gap-4 overflow-hidden p-4">
+      <div className="shrink-0">
+        <IpPageHeader
+          activeTabIsGlobal={activeTab === "global"}
+          refreshing={refreshing}
+          refreshDisabled={refreshDisabled}
+          onOpenProbeSettings={() => setProbeSettingsOpen(true)}
+          onRefresh={() => void handleRefresh()}
+          onAdd={() => setAddOpen(true)}
+        />
+      </div>
 
-          {error && (
-            <Alert variant="destructive">
-              <AlertCircleIcon />
-              <AlertTitle>加载失败</AlertTitle>
-              <AlertDescription>{error}</AlertDescription>
-            </Alert>
-          )}
+      {error && (
+        <Alert variant="destructive" className="shrink-0">
+          <AlertCircleIcon />
+          <AlertTitle>加载失败</AlertTitle>
+          <AlertDescription>{error}</AlertDescription>
+        </Alert>
+      )}
 
-          <Tabs
-            value={activeTab}
-            onValueChange={(v) => setActiveTab(v as ActiveTab)}
-          >
-            <TabsList>
-              <TabsTrigger value="global">全局</TabsTrigger>
-              {PLATFORMS.map((p) => (
-                <TabsTrigger key={p} value={p}>
-                  {PLATFORM_LABELS[p]}
-                </TabsTrigger>
-              ))}
-            </TabsList>
+      <Tabs
+        value={activeTab}
+        onValueChange={(v) => setActiveTab(v as ActiveTab)}
+        className="min-h-0 flex flex-1 flex-col gap-2 overflow-hidden"
+      >
+        <TabsList className="shrink-0">
+          <TabsTrigger value="global">全局</TabsTrigger>
+          {PLATFORMS.map((p) => (
+            <TabsTrigger key={p} value={p}>
+              {PLATFORM_LABELS[p]}
+            </TabsTrigger>
+          ))}
+        </TabsList>
 
-            <TabsContent value="global">
-              <Card>
-                <CardHeader>
-                  <CardTitle className="flex items-center gap-2 text-base">
-                    <ShieldIcon className="size-4" />
-                    全局视图
-                  </CardTitle>
-                </CardHeader>
-                <CardContent>
+        <TabsContent
+          value="global"
+          className="mt-0 flex min-h-0 flex-1 flex-col overflow-hidden"
+        >
+          <Card className="flex min-h-0 flex-1 flex-col overflow-hidden">
+            <CardHeader className="flex shrink-0 flex-row flex-wrap items-center justify-between gap-2 space-y-0 pb-3">
+              <CardTitle className="flex h-7 min-w-0 items-center text-base leading-7">
+                全局视图
+              </CardTitle>
+              <div className="flex flex-wrap items-center justify-end gap-2">
+                <span className="text-muted-foreground text-xs">
+                  共 {globalRows.length} 条
+                </span>
+              </div>
+            </CardHeader>
+            <CardContent className="flex min-h-0 flex-1 flex-col overflow-hidden pt-0">
+              <FloatingScrollArea className="min-h-0 flex-1">
+                <div className="overflow-x-auto pr-2">
                   <GlobalIpTable
                     rows={globalRows}
                     loading={loadingGlobal}
@@ -305,35 +315,50 @@ export function IpPage() {
                     onEdit={setEditing}
                     onDelete={setDeleting}
                   />
+                </div>
+              </FloatingScrollArea>
+            </CardContent>
+          </Card>
+        </TabsContent>
+
+        {PLATFORMS.map((p) => {
+          const platformList = platformRows[p] ?? [];
+          return (
+            <TabsContent
+              key={p}
+              value={p}
+              className="mt-0 flex min-h-0 flex-1 flex-col overflow-hidden"
+            >
+              <Card className="flex min-h-0 flex-1 flex-col overflow-hidden">
+                <CardHeader className="flex shrink-0 flex-row flex-wrap items-center justify-between gap-2 space-y-0 pb-3">
+                  <CardTitle className="flex h-7 min-w-0 items-center text-base leading-7">
+                    {PLATFORM_LABELS[p]} 运行画像
+                  </CardTitle>
+                  <div className="flex flex-wrap items-center justify-end gap-2">
+                    <span className="text-muted-foreground text-xs">
+                      共 {platformList.length} 条
+                    </span>
+                  </div>
+                </CardHeader>
+                <CardContent className="flex min-h-0 flex-1 flex-col overflow-hidden pt-0">
+                  <FloatingScrollArea className="min-h-0 flex-1">
+                    <div className="overflow-x-auto pr-2">
+                      <PlatformIpTable
+                        platform={p}
+                        rows={platformList}
+                        loading={loadingPlatform && !platformRows[p]}
+                        onViewLog={setViewingLog}
+                        onEdit={setEditing}
+                        onDelete={setDeleting}
+                      />
+                    </div>
+                  </FloatingScrollArea>
                 </CardContent>
               </Card>
             </TabsContent>
-
-            {PLATFORMS.map((p) => (
-              <TabsContent key={p} value={p}>
-                <Card>
-                  <CardHeader>
-                    <CardTitle className="flex items-center gap-2 text-base">
-                      <ShieldIcon className="size-4" />
-                      {PLATFORM_LABELS[p]} 运行画像
-                    </CardTitle>
-                  </CardHeader>
-                  <CardContent>
-                    <PlatformIpTable
-                      platform={p}
-                      rows={platformRows[p] ?? []}
-                      loading={loadingPlatform && !platformRows[p]}
-                      onViewLog={setViewingLog}
-                      onEdit={setEditing}
-                      onDelete={setDeleting}
-                    />
-                  </CardContent>
-                </Card>
-              </TabsContent>
-            ))}
-          </Tabs>
-        </div>
-      </FloatingScrollArea>
+          );
+        })}
+      </Tabs>
 
       <AddProxyDialog
         open={addOpen}
