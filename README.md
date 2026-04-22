@@ -30,7 +30,7 @@
 
 ## 🚤快速使用
 
-在 [release](https://github.com/zhouyi207/WeiBoCrawler/releases/latest) 页面下载对应版本就好了
+在 [release](https://github.com/zhouyi207/WeiBoCrawler/releases/latest) 页面下载对应版本就好了，python 版本在 python 分支中
 
 ## 🎨 界面展示
 
