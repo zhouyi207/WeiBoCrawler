@@ -1,0 +1,41 @@
+---
+description: Use shadcn/ui components as the sole UI primitive library
+globs: src/**/*.tsx
+alwaysApply: false
+---
+
+# Use shadcn/ui Components
+
+All UI must be built with shadcn/ui components to ensure consistent styling across the project.
+
+## Rules
+
+- **Prefer shadcn/ui primitives** — Use `Button`, `Input`, `Dialog`, `Select`, `Card`, `Table`, `Tabs`, etc. from `@/components/ui/` before writing custom markup.
+- **No competing UI libraries** — Do not install or import MUI, Ant Design, Chakra, Mantine, or similar component libraries.
+- **Extend via shadcn variants** — When a new visual style is needed, add a variant to the existing shadcn component using `cva` instead of creating a one-off styled element.
+- **Raw HTML only as last resort** — Only use plain `<div>`, `<span>`, etc. for layout wrappers. Interactive elements (buttons, inputs, dialogs, tooltips…) must come from shadcn/ui.
+
+## Examples
+
+```tsx
+// ❌ BAD — raw HTML button with inline styles
+<button className="bg-blue-500 text-white px-4 py-2 rounded">Submit</button>
+
+// ✅ GOOD — shadcn Button
+import { Button } from "@/components/ui/button"
+<Button variant="default">Submit</Button>
+```
+
+```tsx
+// ❌ BAD — hand-rolled modal
+<div className="fixed inset-0 bg-black/50">
+  <div className="bg-white rounded p-6">…</div>
+</div>
+
+// ✅ GOOD — shadcn Dialog
+import { Dialog, DialogContent, DialogTrigger } from "@/components/ui/dialog"
+<Dialog>
+  <DialogTrigger asChild><Button>Open</Button></DialogTrigger>
+  <DialogContent>…</DialogContent>
+</Dialog>
+```

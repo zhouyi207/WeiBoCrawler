@@ -1,0 +1,36 @@
+---
+description: 除路径选择外禁用原生 Windows 对话框（alert/prompt/confirm 等）
+alwaysApply: true
+---
+
+# 禁止使用「非路径」原生窗体
+
+在本项目（Tauri + React）中，**不要**使用会弹出独立 Windows 系统对话框、阻塞整窗的 API，**唯一例外**是用于**选择磁盘路径**的场景（目录/文件浏览）。
+
+## 允许
+
+- **路径检索**：`@tauri-apps/plugin-dialog` 的 `open`（`directory: true` 等）、以及后端仅为选路径而触发的对话框能力。
+
+## 禁止（应改为应用内 UI）
+
+- 浏览器 / WebView：`window.alert`、`window.prompt`、`window.confirm`、`beforeunload` 上的系统确认框等。
+- 为「提示、确认、错误、表单输入」新开原生消息框；应使用 **React 内 Modal、行内错误文案、Toast、自定义确认条** 等，与 `ProjectPickerScreen` / `NewProjectModal` 同一套壳层风格。
+
+## Rust 侧
+
+- **不要**为普通业务提示引入会弹出系统消息框的依赖或 API；错误与结果通过 **`tauri::command` 的 `Result`** 返回，由前端展示。
+
+## 简要对照
+
+```typescript
+// ❌ 禁止（除路径 plugin 外）
+window.alert("…");
+window.prompt("…");
+window.confirm("…");
+
+// ✅ 路径选择
+await open({ directory: true, … });
+
+// ✅ 业务反馈
+setError("…"); // 或 Modal / toast
+```

@@ -1,0 +1,39 @@
+---
+description: Tauri React 前端模块化与 Rust command 薄层（YssGDD）
+alwaysApply: true
+---
+
+# Tauri 全栈：模块化与 Command 约定
+
+## React 前端（`src/`）
+
+- **分层**：`screens` / `ui` / `domain` / `project` / `tauri` 等职责清晰；界面只组合与触发，复杂逻辑进 hook 或纯函数模块。
+- **解耦**：业务与 Tauri 边界集中在 `src/app/tauri/commands.ts`（或其它单一 API 封装）；组件通过封装函数调用后端，避免在 UI 里直接散落 `invoke("...")`。
+- **类型**：领域类型放在 `domain/`，与存储、路由解耦；避免循环依赖（必要时提取共享类型或下层模块）。
+
+## Rust 后端（`src-tauri/src/`）
+
+- **所有 `#[tauri::command]`** 只定义在 **`command/`**（例如 `command/mod.rs` 或 `command/*.rs`），不在 `project/`、`db/` 等业务模块上挂 command 属性。
+- **Command 要薄**：解析参数 → 调用 `crate::project::`、`crate::db::` 等纯逻辑 → 映射为 `Result` / DTO。避免在 command 里写长流程、重复校验或大段 `fs`/SQL。
+- **业务实现** 放在对应模块（如 `project/mod.rs`），对外暴露普通 Rust 函数或小型 `pub` API；`lib.rs` 的 `invoke_handler` 只注册 `command::...`。
+- **新建 command 时**：先在业务模块实现函数，再在 `command` 中加一行包装并注册，保持与前端 `commands.ts` 命名一致。
+
+## 反例
+
+```rust
+// ❌ 在 project/mod.rs 上写 #[tauri::command]
+// ❌ command 内 80 行业务逻辑 + 文件系统细节
+```
+
+```rust
+// ✅ command/mod.rs
+#[tauri::command]
+pub fn init_project(path: String) -> Result<(), String> {
+    crate::project::init_project(&path)
+}
+```
+
+```typescript
+// ❌ 在随机组件里 invoke("init_project", …)
+// ✅ import { initProject } from "../tauri/commands"; await initProject(path);
+```

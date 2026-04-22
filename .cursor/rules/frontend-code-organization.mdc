@@ -1,0 +1,53 @@
+---
+description: Frontend source code directory organization and layered architecture
+globs: src/**/*
+alwaysApply: false
+---
+
+# Frontend Code Organization
+
+All frontend code under `src/` must follow this structure:
+
+```
+src/
+├─ app/                 # 应用入口与全局配置
+│   ├─ main.tsx         # 入口文件
+│   ├─ App.tsx          # 根组件
+│   └─ providers/       # 全局 Provider（Settings、Theme 等）
+│
+├─ views/               # 纯 UI 视图层
+│
+├─ features/            # 业务逻辑（三层架构）
+│   ├─ domain/          # 领域层：纯业务模型与纯函数
+│   ├─ application/     # 应用层：用例编排与 Hook 协调
+│   └─ core/            # 核心层：基础设施与共享能力
+│
+├─ services/            # 服务层：封装所有后端调用
+│
+└─ components/          # 共享组件资源
+```
+
+## Rules
+
+- **app/**: Only entry-point bootstrapping, root component, and global providers. No business logic.
+- **views/**: Pure presentational pages/screens. Compose `components/` and consume hooks from `features/application/`.
+- **features/domain/**: Pure business models, types, value objects, and pure functions. Zero side-effects, no framework imports.
+- **features/application/**: Use-case orchestration hooks that coordinate domain logic and services. The only layer that bridges domain and services.
+- **features/core/**: Shared infrastructure utilities (e.g. storage adapters, event bus, base classes) used across features.
+- **services/**: All backend/API call wrappers (Tauri invoke, HTTP, etc.). No UI or domain logic.
+- **components/**: Reusable, domain-agnostic UI components shared across views.
+
+## Dependency Direction
+
+```
+views → features/application → features/domain
+                             → services
+                             → features/core
+components → (standalone, no feature imports)
+```
+
+- `views/` may import from `features/application/`, `components/`, and `services/`.
+- `features/application/` may import from `features/domain/`, `features/core/`, and `services/`.
+- `features/domain/` must not import from any other `src/` layer.
+- `components/` must not import from `features/` or `views/`.
+- `services/` must not import from `features/` or `views/`.

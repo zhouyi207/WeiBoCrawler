@@ -1,0 +1,53 @@
+[package]
+name = "ysscrawler"
+version = "0.1.0"
+description = "A Tauri App"
+authors = ["you"]
+edition = "2021"
+
+# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
+
+[lib]
+# The `_lib` suffix may seem redundant but it is necessary
+# to make the lib name unique and wouldn't conflict with the bin name.
+# This seems to be only an issue on Windows, see https://github.com/rust-lang/cargo/issues/8519
+name = "ysscrawler_lib"
+crate-type = ["staticlib", "cdylib", "rlib"]
+
+[build-dependencies]
+tauri-build = { version = "2", features = [] }
+
+[dependencies]
+tauri = { version = "2", features = [] }
+tauri-plugin-opener = "2"
+tauri-plugin-dialog = "2"
+serde = { version = "1", features = ["derive"] }
+serde_json = "1"
+rusqlite = { version = "0.39.0", features = ["bundled"] }
+uuid = { version = "1.23.0", features = ["v4"] }
+tokio = { version = "1.52.0", features = ["sync"] }
+reqwest = { version = "0.12", default-features = false, features = [
+    "blocking",
+    "cookies",
+    "json",
+    "rustls-tls",
+    "socks",
+] }
+base64 = "0.22"
+chrono = { version = "0.4", default-features = false, features = ["clock"] }
+scraper = "0.22"
+regex = "1.11"
+encoding_rs = "0.8"
+rust_xlsxwriter = "0.94.0"
+log = "0.4"
+env_logger = "0.11"
+
+# hyper-util 在 SOCKS5 带账号时只向服务端声明单一方法 0x02；部分代理会回复 0xFF（无可接受方法），
+# 而 curl 会同时声明 0x00 与 0x02，故能连通。本地补丁见 `vendor/hyper-util/.../socks/v5/messages.rs`。
+[patch.crates-io]
+hyper-util = { path = "vendor/hyper-util" }
+
+[target.'cfg(any(target_os = "macos", target_os = "windows", target_os = "linux"))'.dependencies]
+tauri-plugin-process = "2"
+tauri-plugin-updater = "2"
+

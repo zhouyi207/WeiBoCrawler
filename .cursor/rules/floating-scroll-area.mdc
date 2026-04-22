@@ -1,0 +1,31 @@
+---
+description: 可滚动区域统一使用 FloatingScrollArea，禁止依赖系统默认滚动条
+alwaysApply: true
+---
+
+# 滚动条：仅使用 FloatingScrollArea
+
+## 必须遵守
+
+- 面向用户的 **纵向**可滚动区域（列表、主工作区、侧栏长内容、模态内长表单等）须用 **`src/app/ui/FloatingScrollArea.tsx`** 包裹内容，由组件提供 **悬浮、不占布局宽度** 的滚动条；父级链需保留 **`flex` + `min-h-0`**（及常见 **`flex-1`**），否则无法正确撑满与滚动。
+- **不要**为同一用途再写一套自定义 `::-webkit-scrollbar` / `scrollbar-width` 仅作美化；全局视口隐藏样式只在 **`App.css` 的 `.floating-scroll-area-viewport`** 与组件配合使用，**不要**给任意 `overflow-auto` 容器零散加「隐藏原生条 + 自绘条」的重复实现。
+- **不要**依赖 **浏览器/Tauri WebView 默认滚动条** 作为产品主界面滚动方案（即避免在长页面区域仅使用裸 `overflow-y-auto` / `overflow-auto` 而不包 `FloatingScrollArea`）。
+
+## 不要求替换（当前组件为纵向）
+
+- **`overflow-x-auto`** 等 **纯横向**滚动（如宽表格、代码块）在未提供横向版 `FloatingScrollArea` 前可暂用原生横向条。
+- **`overflow-hidden`** 仅作裁剪、不参与滚动时不在此列。
+
+## 新建与修改时的检查
+
+- 新增或改动带 `overflow-y-auto` / `overflow-auto` 的容器时：先判断是否为用户可滚动的 **纵向**主区域；若是，**改为** `FloatingScrollArea` + 子级内容结构，而不是追加默认滑块或复制滚动条样式。
+
+```tsx
+// ❌ 长列表主区域仅靠原生滚动条
+<section className="min-h-0 flex-1 overflow-y-auto">...</section>
+
+// ✅ 使用统一组件（外层 section 保持 flex + min-h-0 + flex-1）
+<section className="flex min-h-0 flex-1 flex-col">
+  <FloatingScrollArea>...</FloatingScrollArea>
+</section>
+```
