@@ -1,13 +1,9 @@
 <div align=center>
 <img src="./imgs/Icon.png" alt="WeiBoCrawler" width=100 height=80 style="margin-top:20px;"></img>
-<h1>WeiBoCrawler(新重构)</h1>
-</div>
-
-<div align=center>
 <img src="./imgs/主页.png"  width=600 style="margin-top:30px;margin-bottom:5px"></img>
+<h1>WeiBoCrawler</h1>
 <p style="font-size:15px; font-weight:bold">欢迎！如果好用点个 star 🌟 呗！后面会更新知乎，贴吧，小红书，抖音，快手等平台</p>
 </div>
-
 
 本项目打算长期维护，欢迎大家 Pull requests 成为 Contributor, 如果发现 bug, 可以通过提 [Issues](https://github.com/zhouyi207/WeiBoCrawler/issues) 或添加微信: woyaolz 沟通
 
