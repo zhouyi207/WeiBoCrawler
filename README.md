@@ -1,6 +1,9 @@
 <div align=center>
 <img src="./imgs/Icon.png" alt="WeiBoCrawler" width=100 height=80 style="margin-top:20px;"></img>
+</div>
+<div align=center>
 <img src="./imgs/主页.png"  width=600 style="margin-top:30px;margin-bottom:5px"></img>
+</div>
 <h1>WeiBoCrawler</h1>
 <p style="font-size:15px; font-weight:bold">欢迎！如果好用点个 star 🌟 呗！后面会更新知乎，贴吧，小红书，抖音，快手等平台</p>
 </div>
