@@ -80,7 +80,10 @@
 <img src="./imgs/qrcode.png"  width=300 style="margin-top:30px;margin-bottom:20px"></img>
 </div>
 
+## 致谢
 
+* js逆向 - https://blog.xzregister.cn/
+* 小红书 - https://github.com/Cialle/RedCrack/issues
 
 ## 注意事项！！
 
