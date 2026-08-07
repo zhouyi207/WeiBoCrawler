@@ -85,6 +85,6 @@
 * js逆向 - https://blog.xzregister.cn/
 * 小红书 - https://github.com/Cialle/RedCrack/issues
 
-## 注意事项！！
+## 注意事项！！！
 
 本项目仅用于学术研究，**请勿用于商业用途**。
